@@ -20,7 +20,7 @@ const NotLoggedIn: React.FC = () => {
   const dispatch = useDispatch();
   const onClick: React.MouseEventHandler<HTMLButtonElement> = e => {
     e.preventDefault();
-    dispatch(signin({name: 'Dr. Anonymous'}));
+    dispatch(signin({ user: { name: 'Dr. Who?' } }));
   };
   return (
     <p>
