@@ -1,7 +1,8 @@
 import React, { ReactElement } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './store';
-import { User, signin, signout } from './store/auth';
+import { User, signout } from './store/auth';
+import { signingIn } from './saga/auth';
 
 const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   const dispatch = useDispatch();
@@ -20,7 +21,7 @@ const NotLoggedIn: React.FC = () => {
   const dispatch = useDispatch();
   const onClick: React.MouseEventHandler<HTMLButtonElement> = e => {
     e.preventDefault();
-    dispatch(signin({ user: { name: 'Dr. Who?' } }));
+    dispatch(signingIn('Dr. Who'));
   };
   return (
     <p>
