@@ -1,4 +1,4 @@
-import { AnyAction, createAction, isType } from '../lib/redux-slice';
+import { AnyAction, createActionCreator, isType } from '../lib/redux-action';
 
 export type User = {
   name: string;
@@ -12,8 +12,8 @@ const initialState: AuthState = {
   user: null
 };
 
-export const signin = createAction<{ user: User }>('AUTH_SIGNIN');
-export const signout = createAction('AUTH_SIGNOUT');
+export const signin = createActionCreator<{ user: User }>('AUTH_SIGNIN');
+export const signout = createActionCreator('AUTH_SIGNOUT');
 
 export function authReducer(
   state = initialState,

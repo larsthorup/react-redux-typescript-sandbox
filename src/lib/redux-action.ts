@@ -1,5 +1,5 @@
 export interface AnyAction {
-  type: any;
+  type: string;
 }
 
 export interface Action<Payload> extends AnyAction {
@@ -19,7 +19,7 @@ export function isType<Payload>(
   return action.type === actionCreator.type;
 }
 
-export function createAction<Payload = void>(
+export function createActionCreator<Payload = void>(
   type: string
 ): ActionCreator<Payload> {
   return Object.assign(
