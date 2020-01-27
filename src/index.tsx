@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom';
-import './index.css';
+import './view/index.css';
 import * as serviceWorker from './serviceWorker';
 import { rootComponent } from './root';
 

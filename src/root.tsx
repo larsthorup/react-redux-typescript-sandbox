@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { App } from './App';
+import { App } from './view/App';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore } from 'redux';
 import ReduxThunk from 'redux-thunk';

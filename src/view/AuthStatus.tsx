@@ -1,8 +1,7 @@
 import React, { ReactElement } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from './store';
-import { User, signout } from './store/auth';
-import { signingIn } from './saga/auth';
+import { RootState } from '../store';
+import { User, signout } from '../store/auth';
 
 const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   const dispatch = useDispatch();
@@ -12,22 +11,13 @@ const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   };
   return (
     <p>
-      {user.name} - <button onClick={onClick}>Logout</button>
+      {user.name}<button onClick={onClick}>Logout</button>
     </p>
   );
 };
 
 const NotLoggedIn: React.FC = () => {
-  const dispatch = useDispatch();
-  const onClick: React.MouseEventHandler<HTMLButtonElement> = e => {
-    e.preventDefault();
-    dispatch(signingIn('Dr. Who'));
-  };
-  return (
-    <p>
-      Please <button onClick={onClick}>Login</button>
-    </p>
-  );
+  return <p>Please Login</p>;
 };
 
 export const AuthStatus: React.FC = () => {
