@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore, Store } from 'redux';
 import ReduxThunk from 'redux-thunk';
 import * as ReduxHistory from './lib/redux-history';
-import { rootReducer } from './store';
+import { rootReducer, locationSlicer } from './store';
 
 declare global {
   interface Window {
@@ -14,7 +14,7 @@ declare global {
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const middleware = composeEnhancers(
   applyMiddleware(ReduxThunk),
-  applyMiddleware(ReduxHistory.createMiddleware('location')) // Note: uses state.location
+  applyMiddleware(ReduxHistory.createMiddleware(locationSlicer))
 );
 const store: Store = createStore(rootReducer, middleware);
 ReduxHistory.listen(store);

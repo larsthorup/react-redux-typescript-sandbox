@@ -1,22 +1,21 @@
-import React, { ReactElement } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
+import { Routes, useRoutes } from '../lib/react-redux-history';
 
 import { Home } from './Home';
 import { LoginForm } from './LoginForm';
 import { Profile } from './Profile';
 
 import './App.css';
-import { RootState } from '../store';
+import { locationSlicer } from '../store';
 
-const routes: { [key: string]: ReactElement } = {
+const routes: Routes = {
   '/': <Home />,
   '/signin': <LoginForm />,
   '/profile': <Profile />
 };
 
 export const App: React.FC = () => {
-  const pathname = useSelector((state: RootState) => state.location.pathname);
-  const routeResult = routes[pathname];
+  const routeResult = useRoutes(routes, locationSlicer);
   return (
     <div className="App">
       <header className="App-header">{routeResult}</header>

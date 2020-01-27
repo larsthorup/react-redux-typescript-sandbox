@@ -53,9 +53,9 @@ export function reducer(state: State = initialState, action: AnyAction): State {
   }
 }
 
-export function createMiddleware(slice: string): Middleware {
+export function createMiddleware(slicer: Slicer): Middleware {
   return store => next => (action: AnyAction) => {
-    const { [slice]: state } = store.getState();
+    const state = slicer(store.getState());
     if (isType(action, historyPush)) {
       const { payload } = action;
       if (!R.equals(state, payload)) {
@@ -83,3 +83,5 @@ export function listen(store: Store): Listener {
   store.dispatch(historyChange(location)); // Note: initial location
   return { unlisten };
 }
+
+export type Slicer = (state: any) => State;

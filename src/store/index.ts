@@ -8,3 +8,5 @@ export const rootReducer = combineReducers({
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
+
+export const locationSlicer = (state: RootState) => state.location;
