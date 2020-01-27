@@ -1,9 +1,9 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from '../lib/react-redux-history';
 
 import { signingOut } from '../saga/auth';
 import { RootState } from '../store';
-import { historyPush } from '../lib/redux-history';
 import { User } from '../store/auth';
 
 function LoggedIn({ user }: { user: User }) {
@@ -25,14 +25,9 @@ function NotLoggedIn() {
 }
 
 export function Profile() {
+  const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
   const profile = user ? <LoggedIn user={user} /> : <NotLoggedIn />;
-  const dispatch = useDispatch();
-  const navigate = (pathname: string) => (e: React.MouseEvent) => {
-    // ToDo: useNavigate
-    e.preventDefault();
-    dispatch(historyPush({ pathname }));
-  };
   return (
     <div className="Profile">
       {profile}
