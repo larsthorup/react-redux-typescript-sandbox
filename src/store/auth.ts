@@ -1,3 +1,5 @@
+import { AnyAction, createAction, isType } from '../lib/redux-slice';
+
 export type User = {
   name: string;
 };
@@ -10,48 +12,18 @@ const initialState: AuthState = {
   user: null
 };
 
-const AUTH_SIGNIN = 'AUTH_SIGNIN';
-interface AuthSigninAction {
-  type: typeof AUTH_SIGNIN;
-  payload: AuthState;
-}
-export function signin(payload: AuthState) {
-  return {
-    type: AUTH_SIGNIN,
-    payload
-  };
-}
-signin.displayName = AUTH_SIGNIN;
-signin.toString = () => AUTH_SIGNIN;
-signin.type = 'AUTH_SIGNIN' as const;
-
-const AUTH_SIGNOUT = 'AUTH_SIGNOUT';
-interface AuthSignoutAction {
-  type: typeof AUTH_SIGNOUT;
-  payload: null
-}
-export function signout(payload: null = null) {
-  return {
-    type: AUTH_SIGNOUT,
-    payload
-  };
-}
-signout.displayName = AUTH_SIGNOUT;
-signout.toString = () => AUTH_SIGNOUT;
-signout.type = 'AUTH_SIGNOUT' as const;
-
-type AuthActionTypes = AuthSigninAction | AuthSignoutAction;
+export const signin = createAction<{ user: User }>('AUTH_SIGNIN');
+export const signout = createAction('AUTH_SIGNOUT');
 
 export function authReducer(
   state = initialState,
-  action: AuthActionTypes
+  action: AnyAction
 ): AuthState {
-  switch (action.type) {
-    case signin.type:
-      return { ...state, user: action.payload.user };
-    case signout.type:
-      return { ...state, user: null };
-    default:
-      return state;
+  if (isType(action, signin)) {
+    return { ...state, user: action.payload.user };
+  } else if (isType(action, signout)) {
+    return { ...state, user: null };
+  } else {
+    return state;
   }
 }
