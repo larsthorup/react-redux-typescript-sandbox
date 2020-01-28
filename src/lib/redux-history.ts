@@ -4,7 +4,7 @@ import { Middleware, Store } from 'redux';
 import * as History from 'history';
 import { createActionCreator, AnyAction, isType } from './redux-action';
 
-const history = History.createBrowserHistory();
+export const history = History.createBrowserHistory();
 
 export type State = Readonly<{
   hash?: queryString.ParsedQuery<string>;

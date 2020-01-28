@@ -24,7 +24,7 @@ function NotLoggedIn() {
   return <p>Not logged in</p>;
 }
 
-export function Profile() {
+export const Profile: React.FC = () =>{
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
   const profile = user ? <LoggedIn user={user} /> : <NotLoggedIn />;
