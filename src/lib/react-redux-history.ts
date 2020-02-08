@@ -6,10 +6,12 @@ export type Routes = { [key: string]: ReactElement };
 
 export function useNavigate() {
   const dispatch = useDispatch();
-  return (pathname: string, { replace } = { replace: false }) => (e: React.MouseEvent) => {
+  return (pathname: string, hash = {}, { replace } = { replace: false }) => (
+    e: React.MouseEvent
+  ) => {
     e.preventDefault();
     const actionCreator = replace ? historyReplace : historyPush;
-    dispatch(actionCreator({ pathname }));
+    dispatch(actionCreator({ hash, pathname }));
   };
 }
 

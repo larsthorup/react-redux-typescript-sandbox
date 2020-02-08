@@ -24,12 +24,20 @@ test('react-redux-history', async () => {
       <React.Fragment>
         <div>Home</div>
         <button onClick={navigate('/signin')}>Login</button>
+        <button onClick={navigate('/profile', { id: 47 })}>Profile</button>
       </React.Fragment>
     );
   };
   const Signin = () => <div>Signin</div>;
+  const Profile = () => {
+    const id = ReactRedux.useSelector(
+      (state: RootState) => state.location.hash.id
+    );
+    return <div>Profile {id}</div>;
+  };
   const routes: ReactReduxHistory.Routes = {
     '/': <Home />,
+    '/profile': <Profile />,
     '/signin': <Signin />
   };
   const App = () => {
@@ -52,4 +60,18 @@ test('react-redux-history', async () => {
 
   // then Signin is rendered
   expect(getByText('Signin')).toBeInTheDocument();
+
+  // when clicking browser back
+  ReduxHistory.history.goBack();
+  await wait(() => getByText('Home'));
+
+  // then Home is rendered
+  expect(getByText('Home')).toBeInTheDocument();
+
+  // when navigating with hash parameter
+  fireEvent.click(getByText('Profile'));
+  await wait(() => getByText('Profile 47'));
+
+  // // then Profile is rendered with that parameter
+  expect(getByText('Profile 47')).toBeInTheDocument();
 });

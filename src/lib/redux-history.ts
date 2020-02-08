@@ -7,6 +7,12 @@ import { createActionCreator, AnyAction, isType } from './redux-action';
 export const history = History.createBrowserHistory();
 
 export type State = Readonly<{
+  hash: queryString.ParsedQuery<string>;
+  pathname: string;
+  search: queryString.ParsedQuery<string>;
+}>;
+
+export type Props = Readonly<{
   hash?: queryString.ParsedQuery<string>;
   pathname: string;
   search?: queryString.ParsedQuery<string>;
@@ -21,9 +27,17 @@ function stringify(state: State): History.Location {
   };
 }
 
+function stringifyProps(props: Props): History.Location {
+  return stringify({
+    hash: props.hash || {},
+    pathname: props.pathname,
+    search: props.search || {}
+  });
+}
+
 const historyChange = createActionCreator<History.Location>('historyChange'); // Note: for internal use only
-export const historyPush = createActionCreator<State>('historyPush');
-export const historyReplace = createActionCreator<State>('historyReplace');
+export const historyPush = createActionCreator<Props>('historyPush');
+export const historyReplace = createActionCreator<Props>('historyReplace');
 
 export const initialState: State = {
   hash: {},
@@ -34,9 +48,9 @@ export const initialState: State = {
 export function reducer(state: State = initialState, action: AnyAction): State {
   if (isType(action, historyChange)) {
     const location = {
-      hash: queryString.parse(action.payload.hash),
+      hash: queryString.parse(action.payload.hash) || {},
       pathname: action.payload.pathname,
-      search: queryString.parse(action.payload.search)
+      search: queryString.parse(action.payload.search) || {}
     };
     const unchanged = R.equals(state, location);
     if (unchanged) {
@@ -59,12 +73,12 @@ export function createMiddleware(slicer: Slicer): Middleware {
     if (isType(action, historyPush)) {
       const { payload } = action;
       if (!R.equals(state, payload)) {
-        history.push(stringify(payload));
+        history.push(stringifyProps(payload));
       }
     } else if (isType(action, historyReplace)) {
       const { payload } = action;
       if (!R.equals(state, payload)) {
-        history.replace(stringify(payload));
+        history.replace(stringifyProps(payload));
       }
     } else {
       next(action);
