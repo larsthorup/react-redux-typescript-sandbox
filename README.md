@@ -1,4 +1,6 @@
-# typescript-sandbox
+# react-redux-typescript-sandbox
+
+[![Build Status](https://travis-ci.org/larsthorup/react-redux-typescript-sandbox.png)](https://travis-ci.org/larsthorup/react-redux-typescript-sandbox) [![Coverage Status](https://coveralls.io/repos/larsthorup/react-redux-typescript-sandbox/badge.png?branch=master)](https://coveralls.io/r/larsthorup/react-redux-typescript-sandbox?branch=master) [![Dependency Status](https://david-dm.org/larsthorup/react-redux-typescript-sandbox.png)](https://david-dm.org/larsthorup/react-redux-typescript-sandbox#info=dependencies) [![devDependency Status](https://david-dm.org/larsthorup/react-redux-typescript-sandbox/dev-status.png)](https://david-dm.org/larsthorup/react-redux-typescript-sandbox#info=devDependencies)
 
 ## Docs
 
