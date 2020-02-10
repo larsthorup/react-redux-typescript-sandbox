@@ -13,6 +13,7 @@
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.5",
     "@types/react-redux": "^7.1.7",
+    "coveralls": "^3.0.9",
     "history": "^4.10.1",
     "prettier": "^1.19.1",
     "query-string": "^6.10.1",
@@ -30,7 +31,9 @@
     "build": "react-scripts build",
     "test:watch": "react-scripts test",
     "test": "react-scripts test --watchAll=false --coverage",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "coveralls": "coveralls < output/coverage/lcov.info",
+    "travis": "npm test && npm run coveralls"
   },
   "eslintConfig": {
     "extends": "react-app"
