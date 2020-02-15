@@ -42,7 +42,7 @@ test('react-redux-history', async () => {
   };
   const App = () => {
     const routeResult = ReactReduxHistory.useRoutes(routes, locationSlicer);
-    return routeResult;
+    return <>{routeResult}</>;
   };
   const rootComponent: ReactElement = (
     <ReactRedux.Provider store={store}>
