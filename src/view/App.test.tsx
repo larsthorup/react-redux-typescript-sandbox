@@ -1,7 +1,8 @@
 import React from 'react';
 import { fireEvent, render, wait } from '@testing-library/react';
 
-import { rootComponent } from '../root';
+import { createRootElement } from '../root';
+import App from './App';
 
 test('auth flow', async () => {
   const getLoggedOutStatus = () => getByText('Please');
@@ -12,7 +13,7 @@ test('auth flow', async () => {
   const getProfileButton = () => getByText('Profile');
 
   // When: rendered
-  const { getByPlaceholderText, getByText } = render(rootComponent);
+  const { getByPlaceholderText, getByText } = render(createRootElement());
 
   // Then: is logged out
   expect(getLoggedOutStatus()).toBeInTheDocument();
