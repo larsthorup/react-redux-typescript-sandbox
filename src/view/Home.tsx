@@ -15,7 +15,7 @@ const Home: React.FC = () => {
   ) : (
     <p>
       Please
-      <button onClick={navigate('/signin', { replace: true })}>Sign in</button>
+      <button onClick={navigate('/signin', {}, { replace: true })}>Sign in</button>
     </p>
   );
   return <div className="Home">{status}</div>;
