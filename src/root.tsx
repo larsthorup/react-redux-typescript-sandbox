@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { App } from './view/App';
+import App from './view/App';
 import * as ReactRedux from 'react-redux';
 import * as Redux from 'redux';
 import ReduxThunk from 'redux-thunk';
@@ -11,7 +11,8 @@ declare global {
     __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof Redux.compose;
   }
 }
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || Redux.compose;
+const composeEnhancers =
+  window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || Redux.compose;
 const middleware = composeEnhancers(
   Redux.applyMiddleware(ReduxThunk),
   Redux.applyMiddleware(ReduxHistory.createMiddleware(locationSlicer))

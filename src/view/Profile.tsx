@@ -24,7 +24,7 @@ function NotLoggedIn() {
   return <p>Not logged in</p>;
 }
 
-export const Profile: React.FC = () =>{
+const Profile: React.FC = () => {
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
   const profile = user ? <LoggedIn user={user} /> : <NotLoggedIn />;
@@ -34,4 +34,6 @@ export const Profile: React.FC = () =>{
       <button onClick={navigate('/')}>Home</button>
     </div>
   );
-}
+};
+
+export default Profile;

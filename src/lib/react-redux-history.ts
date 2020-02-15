@@ -1,8 +1,8 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Slicer, historyReplace, historyPush } from './redux-history';
-import { ReactElement } from 'react';
+import { ReactNode } from 'react';
 
-export type Routes = { [key: string]: ReactElement };
+export type Routes = { [key: string]: ReactNode };
 
 export function useNavigate() {
   const dispatch = useDispatch();

@@ -27,12 +27,17 @@ test('auth flow', async () => {
   fireEvent.change(passwordInput, { target: { value: 'whatever' } });
   fireEvent.click(getLoginButton());
 
-  // Then: is logged in
+  // When: waiting for fetch
   await wait(getProfileButton);
+
+  // Then: is logged in
   expect(getProfileButton()).toBeInTheDocument();
 
   // When: navigate to profile
   fireEvent.click(getProfileButton());
+
+  // When: waiting for lazy load
+  await wait(getLoggedInStatus);
 
   // Then: is on profile page
   expect(getLoggedInStatus()).toBeInTheDocument();

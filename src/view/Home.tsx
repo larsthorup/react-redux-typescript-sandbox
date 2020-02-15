@@ -4,7 +4,7 @@ import { useNavigate } from '../lib/react-redux-history';
 
 import { RootState } from '../store';
 
-export const Home: React.FC = () => {
+const Home: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
   const loggedIn = !!user;
@@ -20,3 +20,5 @@ export const Home: React.FC = () => {
   );
   return <div className="Home">{status}</div>;
 };
+
+export default Home;

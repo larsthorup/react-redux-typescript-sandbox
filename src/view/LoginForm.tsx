@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import { signingIn } from '../saga/auth';
 
-export const LoginForm: React.FC = () => {
+const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const onPasswordChange: React.ChangeEventHandler<HTMLInputElement> = e =>
@@ -35,4 +35,6 @@ export const LoginForm: React.FC = () => {
       <button type="submit">Login</button>
     </form>
   );
-}
+};
+
+export default LoginForm;
