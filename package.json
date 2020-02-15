@@ -29,11 +29,11 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test:watch": "react-scripts test",
-    "test": "react-scripts test --watchAll=false --coverage",
+    "test": "tsc && react-scripts test",
+    "test:ci": "tsc && react-scripts test --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "coveralls": "coveralls < coverage/lcov.info",
-    "travis": "npm test && npm run coveralls"
+    "travis": "npm test:ci && npm run coveralls"
   },
   "eslintConfig": {
     "extends": "react-app"
