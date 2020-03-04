@@ -4,11 +4,9 @@ import { ReactNode } from 'react';
 
 export type Routes = { [key: string]: ReactNode };
 
-export function useNavigate() {
+export function useNavigate({ replace } = { replace: false }) {
   const dispatch = useDispatch();
-  return (pathname: string, hash = {}, { replace } = { replace: false }) => (
-    e: React.MouseEvent
-  ) => {
+  return (pathname: string, hash = {}) => (e: React.MouseEvent) => {
     e.preventDefault();
     const actionCreator = replace ? historyReplace : historyPush;
     dispatch(actionCreator({ hash, pathname }));

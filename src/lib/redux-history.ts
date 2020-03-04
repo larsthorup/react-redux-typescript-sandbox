@@ -35,7 +35,9 @@ function stringifyProps(props: Props): History.Location {
   });
 }
 
-const historyChange = createActionCreator<History.Location>('historyChange'); // Note: for internal use only
+const locationChanged = createActionCreator<History.Location>(
+  'locationChanged'
+); // Note: for internal use only
 export const historyPush = createActionCreator<Props>('historyPush');
 export const historyReplace = createActionCreator<Props>('historyReplace');
 
@@ -46,22 +48,13 @@ export const initialState: State = {
 };
 
 export function reducer(state: State = initialState, action: AnyAction): State {
-  if (isType(action, historyChange)) {
+  if (isType(action, locationChanged)) {
     const location = {
       hash: queryString.parse(action.payload.hash) || {},
       pathname: action.payload.pathname,
       search: queryString.parse(action.payload.search) || {}
     };
-    const unchanged = R.equals(state, location);
-    if (unchanged) {
-      return state;
-    } else {
-      return {
-        hash: location.hash || state.hash,
-        pathname: location.pathname || state.pathname,
-        search: location.search || state.search
-      };
-    }
+    return R.equals(state, location) ? state : location;
   } else {
     return state;
   }
@@ -91,10 +84,10 @@ export interface Listener {
 }
 export function listen(store: Store): Listener {
   const unlisten = history.listen((location: History.Location, _) => {
-    store.dispatch(historyChange(location));
+    store.dispatch(locationChanged(location));
   });
   const { location } = history;
-  store.dispatch(historyChange(location)); // Note: initial location
+  store.dispatch(locationChanged(location)); // Note: initial location
   return { unlisten };
 }
 

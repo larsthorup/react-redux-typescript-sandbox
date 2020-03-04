@@ -21,11 +21,11 @@ test('react-redux-history', async () => {
   const Home = () => {
     const navigate = ReactReduxHistory.useNavigate();
     return (
-      <React.Fragment>
+      <>
         <div>Home</div>
         <button onClick={navigate('/signin')}>Login</button>
         <button onClick={navigate('/profile', { id: 47 })}>Profile</button>
-      </React.Fragment>
+      </>
     );
   };
   const Signin = () => <div>Signin</div>;
@@ -56,22 +56,19 @@ test('react-redux-history', async () => {
 
   // when navigating
   fireEvent.click(getByText('Login'));
-  await wait(() => getByText('Signin'));
 
   // then Signin is rendered
-  expect(getByText('Signin')).toBeInTheDocument();
+  await wait(() => getByText('Signin'));
 
   // when clicking browser back
   ReduxHistory.history.goBack();
-  await wait(() => getByText('Home'));
 
   // then Home is rendered
-  expect(getByText('Home')).toBeInTheDocument();
+  await wait(() => getByText('Home'));
 
   // when navigating with hash parameter
   fireEvent.click(getByText('Profile'));
-  await wait(() => getByText('Profile 47'));
 
   // // then Profile is rendered with that parameter
-  expect(getByText('Profile 47')).toBeInTheDocument();
+  await wait(() => getByText('Profile 47'));
 });
