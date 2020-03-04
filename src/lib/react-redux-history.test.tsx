@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import * as Redux from 'redux';
 import * as ReactRedux from 'react-redux';
-import { fireEvent, render, wait } from '@testing-library/react';
+import { fireEvent, render, wait, getNodeText } from '@testing-library/react';
 
 import * as ReduxHistory from './redux-history';
 import * as ReactReduxHistory from './react-redux-history';
@@ -24,21 +24,36 @@ test('react-redux-history', async () => {
       <>
         <div>Home</div>
         <button onClick={navigate('/signin')}>Login</button>
-        <button onClick={navigate('/profile', { id: 47 })}>Profile</button>
+        <button onClick={navigate('/profile/47', { tab: 'all' })}>
+          Profile
+        </button>
       </>
     );
   };
   const Signin = () => <div>Signin</div>;
+  const RoutePaths = {
+    Home: '/',
+    Profile: '/profile/:id',
+    Signin: '/signin'
+  };
   const Profile = () => {
-    const id = ReactRedux.useSelector(
-      (state: RootState) => state.location.hash.id
+    const { id } = ReactReduxHistory.usePath(
+      RoutePaths.Profile,
+      locationSlicer
+    ) as { id: string };
+    const { tab } = ReactRedux.useSelector(
+      (state: RootState) => state.location.hash
     );
-    return <div>Profile {id}</div>;
+    return (
+      <div>
+        Profile-{id}-{tab}
+      </div>
+    );
   };
   const routes: ReactReduxHistory.Routes = {
-    '/': <Home />,
-    '/profile': <Profile />,
-    '/signin': <Signin />
+    [RoutePaths.Home]: <Home />,
+    [RoutePaths.Profile]: <Profile />,
+    [RoutePaths.Signin]: <Signin />
   };
   const App = () => {
     const routeResult = ReactReduxHistory.useRoutes(routes, locationSlicer);
@@ -49,7 +64,7 @@ test('react-redux-history', async () => {
       <App />
     </ReactRedux.Provider>
   );
-  const { getByText } = render(rootComponent);
+  const { container, getByText } = render(rootComponent);
 
   // then initially Home is rendered
   expect(getByText('Home')).toBeInTheDocument();
@@ -69,6 +84,12 @@ test('react-redux-history', async () => {
   // when navigating with hash parameter
   fireEvent.click(getByText('Profile'));
 
-  // // then Profile is rendered with that parameter
-  await wait(() => getByText('Profile 47'));
+  // then Profile is rendered with that parameter
+  await wait(() => getByText('Profile-47-all'));
+
+  // when navigating to non-existing page
+  ReduxHistory.history.push('/notyet');
+
+  // then nothing is rendered
+  expect(getNodeText(container)).toEqual('');
 });
