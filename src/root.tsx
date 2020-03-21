@@ -24,7 +24,7 @@ export const createRootElement = (): ReactElement => {
 };
 
 export const setupStore = (): Store => {
-  const store: Store = Redux.createStore(rootReducer, middleware);
+  const store = Redux.createStore(rootReducer, middleware);
   ReduxHistory.listen(store);
   return store;
 };

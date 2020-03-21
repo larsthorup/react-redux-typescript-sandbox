@@ -13,7 +13,6 @@ export const rootReducer = Redux.combineReducers({
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
-export type Store = Redux.Store<RootState>;
 export type Selector<T> = (state: RootState) => T;
 export type Saga = ReduxThunk.ThunkAction<
   void,
@@ -26,6 +25,9 @@ export type Dispatch = ReduxThunk.ThunkDispatch<
   unknown,
   Redux.Action<string>
 >;
+export interface Store extends Redux.Store<RootState> {
+  dispatch: Dispatch;
+}
 
 const locationSlicer = (state: RootState) => state.location;
 export const historyMiddleware = ReduxHistory.createMiddleware(locationSlicer);
