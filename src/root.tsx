@@ -4,7 +4,7 @@ import * as ReactRedux from 'react-redux';
 import * as Redux from 'redux';
 import ReduxThunk from 'redux-thunk';
 import * as ReduxHistory from './lib/redux-history';
-import { rootReducer, locationSlicer, RootState } from './store';
+import { rootReducer, historyMiddleware, Store } from './store';
 
 declare global {
   interface Window {
@@ -15,26 +15,20 @@ const composeEnhancers =
   window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || Redux.compose;
 const middleware = composeEnhancers(
   Redux.applyMiddleware(ReduxThunk),
-  Redux.applyMiddleware(ReduxHistory.createMiddleware(locationSlicer))
+  Redux.applyMiddleware(historyMiddleware)
 );
 
-export const createRootElement: () => ReactElement = () => {
+export const createRootElement = (): ReactElement => {
   const store = setupStore();
   return connect(<App />, store);
 };
 
-export const setupStore: () => Redux.Store<RootState> = () => {
-  const store: Redux.Store<RootState> = Redux.createStore(
-    rootReducer,
-    middleware
-  );
+export const setupStore = (): Store => {
+  const store: Store = Redux.createStore(rootReducer, middleware);
   ReduxHistory.listen(store);
   return store;
 };
 
-export const connect: (
-  element: ReactElement,
-  store: Redux.Store<RootState>
-) => ReactElement = (element, store) => {
+export const connect = (element: ReactElement, store: Store): ReactElement => {
   return <ReactRedux.Provider store={store}>{element}</ReactRedux.Provider>;
 };

@@ -18,22 +18,19 @@ export type Props = Readonly<{
   search?: queryString.ParsedQuery<string>;
 }>;
 
-function stringify(state: State): History.Location {
-  return {
-    hash: queryString.stringify(state.hash || {}),
-    pathname: state.pathname,
-    search: queryString.stringify(state.search || {}),
-    state: null
-  };
-}
+const stringify = (state: State): History.Location => ({
+  hash: queryString.stringify(state.hash || {}),
+  pathname: state.pathname,
+  search: queryString.stringify(state.search || {}),
+  state: null
+});
 
-function stringifyProps(props: Props): History.Location {
-  return stringify({
+const stringifyProps = (props: Props): History.Location =>
+  stringify({
     hash: props.hash || {},
     pathname: props.pathname,
     search: props.search || {}
   });
-}
 
 const locationChanged = createActionCreator<History.Location>(
   'locationChanged'
@@ -47,7 +44,10 @@ export const initialState: State = {
   search: {}
 };
 
-export function reducer(state: State = initialState, action: AnyAction): State {
+export const reducer = (
+  state: State = initialState,
+  action: AnyAction
+): State => {
   if (isType(action, locationChanged)) {
     const location = {
       hash: queryString.parse(action.payload.hash) || {},
@@ -58,37 +58,37 @@ export function reducer(state: State = initialState, action: AnyAction): State {
   } else {
     return state;
   }
-}
+};
 
-export function createMiddleware(slicer: Slicer): Middleware {
-  return store => next => (action: AnyAction) => {
-    const state = slicer(store.getState());
-    if (isType(action, historyPush)) {
-      const { payload } = action;
-      if (!R.equals(state, payload)) {
-        history.push(stringifyProps(payload));
-      }
-    } else if (isType(action, historyReplace)) {
-      const { payload } = action;
-      if (!R.equals(state, payload)) {
-        history.replace(stringifyProps(payload));
-      }
-    } else {
-      next(action);
+export const createMiddleware = (
+  slicer: Slicer
+): Middleware => store => next => (action: AnyAction) => {
+  const state = slicer(store.getState());
+  if (isType(action, historyPush)) {
+    const { payload } = action;
+    if (!R.equals(state, payload)) {
+      history.push(stringifyProps(payload));
     }
-  };
-}
+  } else if (isType(action, historyReplace)) {
+    const { payload } = action;
+    if (!R.equals(state, payload)) {
+      history.replace(stringifyProps(payload));
+    }
+  } else {
+    next(action);
+  }
+};
 
 export interface Listener {
   unlisten: () => void;
 }
-export function listen(store: Store): Listener {
+export const listen = (store: Store): Listener => {
   const unlisten = history.listen((location: History.Location, _) => {
     store.dispatch(locationChanged(location));
   });
   const { location } = history;
   store.dispatch(locationChanged(location)); // Note: initial location
   return { unlisten };
-}
+};
 
 export type Slicer = (state: any) => State;

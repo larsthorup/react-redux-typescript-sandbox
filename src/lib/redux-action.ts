@@ -12,17 +12,17 @@ export interface ActionCreator<Payload> {
   (payload: Payload): Action<Payload>;
 }
 
-export function isType<Payload>(
+export const isType = <Payload>(
   action: AnyAction,
   actionCreator: ActionCreator<Payload>
-): action is Action<Payload> {
+): action is Action<Payload> => {
   return action.type === actionCreator.type;
-}
+};
 
-export function createActionCreator<Payload = void>(
+export const createActionCreator = <Payload = void>(
   type: string
-): ActionCreator<Payload> {
-  return Object.assign(
+): ActionCreator<Payload> =>
+  Object.assign(
     (payload: Payload) => {
       const action: Action<Payload> = {
         type,
@@ -35,4 +35,3 @@ export function createActionCreator<Payload = void>(
       toString: () => type
     }
   ) as ActionCreator<Payload>;
-}

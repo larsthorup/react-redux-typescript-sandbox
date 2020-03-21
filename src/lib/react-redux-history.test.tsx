@@ -12,11 +12,18 @@ test('react-redux-history', async () => {
     location: ReduxHistory.reducer
   });
   type RootState = ReturnType<typeof rootReducer>;
+  type Store = Redux.Store<RootState>;
   const locationSlicer = (state: RootState) => state.location;
+  const usePath = <T extends {}>(routePath: string): T =>
+    ReactReduxHistory.usePath(routePath, locationSlicer);
+  const useHash = <T extends {}>(): T =>
+    ReactReduxHistory.useHash(locationSlicer);
+  const useRoutes = (routes: ReactReduxHistory.Routes) =>
+    ReactReduxHistory.useRoutes(routes, locationSlicer);
   const middleware = Redux.compose(
     Redux.applyMiddleware(ReduxHistory.createMiddleware(locationSlicer))
   );
-  const store: Redux.Store = Redux.createStore(rootReducer, middleware);
+  const store: Store = Redux.createStore(rootReducer, middleware);
   ReduxHistory.listen(store);
   const Home = () => {
     const navigate = ReactReduxHistory.useNavigate();
@@ -37,13 +44,8 @@ test('react-redux-history', async () => {
     Signin: '/signin'
   };
   const Profile = () => {
-    const { id } = ReactReduxHistory.usePath(
-      RoutePaths.Profile,
-      locationSlicer
-    ) as { id: string };
-    const { tab } = ReactRedux.useSelector(
-      (state: RootState) => state.location.hash
-    );
+    const { id } = usePath<{ id: string }>(RoutePaths.Profile);
+    const { tab } = useHash<{ tab: string }>();
     return (
       <div>
         Profile-{id}-{tab}
@@ -56,7 +58,7 @@ test('react-redux-history', async () => {
     [RoutePaths.Signin]: <Signin />
   };
   const App = () => {
-    const routeResult = ReactReduxHistory.useRoutes(routes, locationSlicer);
+    const routeResult = useRoutes(routes);
     return <>{routeResult}</>;
   };
   const rootComponent: ReactElement = (

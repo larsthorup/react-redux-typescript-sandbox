@@ -1,8 +1,11 @@
 import * as Redux from 'redux';
+import * as ReduxThunk from 'redux-thunk';
 import * as ReactRedux from 'react-redux';
+import * as ReduxHistory from '../lib/redux-history';
+import * as ReactReduxHistory from '../lib/react-redux-history';
+
 import { authReducer } from './auth';
 import { locationReducer } from './location';
-import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 
 export const rootReducer = Redux.combineReducers({
   auth: authReducer,
@@ -10,18 +13,32 @@ export const rootReducer = Redux.combineReducers({
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
+export type Store = Redux.Store<RootState>;
+export type Selector<T> = (state: RootState) => T;
+export type Saga = ReduxThunk.ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Redux.Action<string>
+>;
+export type Dispatch = ReduxThunk.ThunkDispatch<
+  RootState,
+  unknown,
+  Redux.Action<string>
+>;
 
-export type Saga = ThunkAction<void, RootState, unknown, Redux.Action<string>>;
-export type Dispatch = ThunkDispatch<RootState, unknown, Redux.Action<string>>;
-
-export const locationSlicer = (state: RootState) => state.location;
+const locationSlicer = (state: RootState) => state.location;
+export const historyMiddleware = ReduxHistory.createMiddleware(locationSlicer);
+export const useRoutes = (routes: ReactReduxHistory.Routes) => {
+  return ReactReduxHistory.useRoutes(routes, locationSlicer);
+};
 
 // Note: stronger typed hook
-export function useSelector<T>(selector: (state: RootState) => T): T {
+export const useSelector = <T>(selector: Selector<T>): T => {
   return ReactRedux.useSelector(selector);
-}
+};
 
 // Note: stronger typed hook
-export function useDispatch(): Dispatch {
+export const useDispatch = (): Dispatch => {
   return ReactRedux.useDispatch();
-}
+};

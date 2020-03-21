@@ -1,10 +1,11 @@
 import React, { Suspense } from 'react';
-import { Routes, useRoutes } from '../lib/react-redux-history';
+import { Routes } from '../lib/react-redux-history';
 
 import Home from './Home';
 import LoginForm from './LoginForm';
+import { useRoutes } from '../store';
+
 import './App.css';
-import { locationSlicer } from '../store';
 
 const Profile = React.lazy(() => import('./Profile'));
 
@@ -15,7 +16,7 @@ const routes: Routes = {
 };
 
 const App: React.FC = () => {
-  const routeResult = useRoutes(routes, locationSlicer);
+  const routeResult = useRoutes(routes);
   const Loading = () => <div>Loading...</div>;
   return (
     <div className="App">

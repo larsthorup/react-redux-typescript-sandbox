@@ -15,10 +15,10 @@ const initialState: AuthState = {
 export const signin = createActionCreator<{ user: User }>('AUTH_SIGNIN');
 export const signout = createActionCreator('AUTH_SIGNOUT');
 
-export function authReducer(
+export const authReducer = (
   state = initialState,
   action: AnyAction
-): AuthState {
+): AuthState => {
   if (isType(action, signin)) {
     return { ...state, user: action.payload.user };
   } else if (isType(action, signout)) {
@@ -26,4 +26,4 @@ export function authReducer(
   } else {
     return state;
   }
-}
+};

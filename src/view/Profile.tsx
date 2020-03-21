@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from '../store';
 import { signingOut } from '../saga/auth';
 import { User } from '../store/auth';
 
-function LoggedIn({ user }: { user: User }) {
+const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   const dispatch = useDispatch();
   const onClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -17,11 +17,11 @@ function LoggedIn({ user }: { user: User }) {
       <button onClick={onClick}>Logout</button>
     </p>
   );
-}
+};
 
-function NotLoggedIn() {
+const NotLoggedIn: React.FC = () => {
   return <p>Not logged in</p>;
-}
+};
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
