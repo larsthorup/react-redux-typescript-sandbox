@@ -1,9 +1,8 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from '../lib/react-redux-history';
 
+import { useDispatch, useSelector } from '../store';
 import { signingOut } from '../saga/auth';
-import { RootState } from '../store';
 import { User } from '../store/auth';
 
 function LoggedIn({ user }: { user: User }) {
@@ -26,7 +25,7 @@ function NotLoggedIn() {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useSelector(state => state.auth.user);
   const profile = user ? <LoggedIn user={user} /> : <NotLoggedIn />;
   return (
     <div className="Profile">

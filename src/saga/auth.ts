@@ -1,9 +1,9 @@
-import { Dispatch } from 'redux';
 import { signin, signout } from '../store/auth';
 import { historyReplace } from '../lib/redux-history';
+import { Saga } from '../store';
 
-export function signingIn(username: string, password: string) {
-  return async function(dispatch: Dispatch) {
+export function signingIn(username: string, password: string): Saga {
+  return async function(dispatch) {
     return new Promise(resolve => {
       setTimeout(() => {
         dispatch(signin({ user: { name: username } }));
@@ -14,10 +14,9 @@ export function signingIn(username: string, password: string) {
   };
 }
 
-export function signingOut() {
-  return async function(dispatch: Dispatch) {
+export function signingOut(): Saga {
+  return async function(dispatch) {
     dispatch(signout());
     dispatch(historyReplace({ pathname: '/' }));
-    return Promise.resolve();
   };
 }

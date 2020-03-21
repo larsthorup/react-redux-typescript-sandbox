@@ -1,11 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from '../lib/react-redux-history';
 
-import { RootState } from '../store';
+import { useSelector } from '../store';
 
 const Home: React.FC = () => {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
   const replace = useNavigate({ replace: true });
   const loggedIn = !!user;
