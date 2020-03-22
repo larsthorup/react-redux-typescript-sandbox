@@ -15,7 +15,7 @@ export const rootReducer = Redux.combineReducers({
 export type RootState = ReturnType<typeof rootReducer>;
 export type Selector<T> = (state: RootState) => T;
 export type Saga = ReduxThunk.ThunkAction<
-  void,
+  Promise<void>,
   RootState,
   unknown,
   Redux.Action<string>

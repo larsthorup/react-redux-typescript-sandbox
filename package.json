@@ -25,13 +25,15 @@
     "react-scripts": "3.3.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "user-event": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "tsc && react-scripts test",
-    "test:ci": "tsc && react-scripts test --watchAll=false --coverage",
+    "test-comment": "echo https://github.com/facebook/create-react-app/issues/7491#issuecomment-520416528",
+    "test": "tsc && react-scripts test --env=jsdom-fourteen",
+    "test:ci": "tsc && react-scripts test --env=jsdom-fourteen --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "coveralls": "coveralls < coverage/lcov.info",
     "travis": "npm run test:ci && npm run coveralls"

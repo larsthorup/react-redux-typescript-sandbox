@@ -1,5 +1,6 @@
 import React from 'react';
-import { fireEvent, render, wait } from '@testing-library/react';
+import { render, wait } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { createRootElement } from '../root';
 import App from './App';
@@ -19,14 +20,14 @@ test('auth flow', async () => {
   expect(getLoggedOutStatus()).toBeInTheDocument();
 
   // When: navigate to sign in
-  fireEvent.click(getSigninButton());
+  userEvent.click(getSigninButton());
 
   // When: login
   const usernameInput = getByPlaceholderText('User name');
   const passwordInput = getByPlaceholderText('Password');
-  fireEvent.change(usernameInput, { target: { value: 'Lars' } });
-  fireEvent.change(passwordInput, { target: { value: 'whatever' } });
-  fireEvent.click(getLoginButton());
+  userEvent.type(usernameInput, 'Lars');
+  userEvent.type(passwordInput, 'whatever');
+  userEvent.click(getLoginButton());
 
   // When: waiting for fetch
   await wait(getProfileButton);
@@ -35,7 +36,7 @@ test('auth flow', async () => {
   expect(getProfileButton()).toBeInTheDocument();
 
   // When: navigate to profile
-  fireEvent.click(getProfileButton());
+  userEvent.click(getProfileButton());
 
   // When: waiting for lazy load
   await wait(getLoggedInStatus);
@@ -45,7 +46,7 @@ test('auth flow', async () => {
   expect(getLogoutButton()).toBeInTheDocument();
 
   // When: logout
-  fireEvent.click(getLogoutButton());
+  userEvent.click(getLogoutButton());
 
   // Then: logged out
   expect(getLoggedOutStatus()).toBeInTheDocument();
