@@ -2,20 +2,20 @@ export interface AnyAction {
   type: string;
 }
 
-export interface Action<Payload> extends AnyAction {
+export interface PayloadAction<TPayload> extends AnyAction {
   type: string;
-  payload: Payload;
+  payload: TPayload;
 }
 
 export interface ActionCreator<Payload> {
   type: string;
-  (payload: Payload): Action<Payload>;
+  (payload: Payload): PayloadAction<Payload>;
 }
 
 export const isType = <Payload>(
   action: AnyAction,
   actionCreator: ActionCreator<Payload>
-): action is Action<Payload> => {
+): action is PayloadAction<Payload> => {
   return action.type === actionCreator.type;
 };
 
@@ -24,7 +24,7 @@ export const createActionCreator = <Payload = void>(
 ): ActionCreator<Payload> =>
   Object.assign(
     (payload: Payload) => {
-      const action: Action<Payload> = {
+      const action: PayloadAction<Payload> = {
         type,
         payload
       };

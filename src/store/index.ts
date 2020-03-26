@@ -4,11 +4,11 @@ import * as ReactRedux from 'react-redux';
 import * as ReduxHistory from '../lib/redux-history';
 import * as ReactReduxHistory from '../lib/react-redux-history';
 
-import { authReducer } from './auth';
+import auth from './auth';
 import { locationReducer } from './location';
 
 export const rootReducer = Redux.combineReducers({
-  auth: authReducer,
+  auth: auth.reducer,
   location: locationReducer
 });
 
