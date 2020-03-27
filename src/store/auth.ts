@@ -1,9 +1,5 @@
-import {
-  AnyAction,
-  createActionCreator,
-  PayloadAction,
-  AnyActionCreator
-} from '../lib/redux-action';
+import * as R from 'ramda';
+import { AnyAction, createActionCreator } from '../lib/redux-action';
 
 export type User = {
   name: string;
@@ -22,11 +18,11 @@ const sliceConfig = {
   reducers: {
     signin: (
       state: AuthState,
-      { payload: { user } }: PayloadAction<{ user: User }>
+      { payload: { user } }: { payload: { user: User } }
     ) => {
       return { ...state, user };
     },
-    signout: (state: AuthState, action: PayloadAction<void>) => {
+    signout: (state: AuthState, action: void) => {
       return { ...state, user: null };
     }
   }
@@ -41,21 +37,22 @@ const actions = {
 };
 
 // TODO: extract to redux-slice
-const actionCreatorByKey = actions as { [key: string]: AnyActionCreator };
-const reducerByType = sliceConfig.reducers as {
-  [key: string]: (state: AuthState, action: any) => AuthState;
-};
+const reducerByType = R.fromPairs(
+  R.toPairs(
+    sliceConfig.reducers
+  ).map(
+    ([key, reducer]: [
+      string,
+      (state: AuthState, action: any) => AuthState
+    ]) => [`${name}.${key}`, reducer]
+  )
+);
 const reducer = (
   state = sliceConfig.initialState,
   action: AnyAction
 ): AuthState => {
-  const hasSameType = (key: string) => {
-    const actionCreator = actionCreatorByKey[key];
-    return actionCreator.type === action.type;
-  };
-  const type = Object.keys(sliceConfig.reducers).find(hasSameType);
-  if (type) {
-    const reducer = reducerByType[type];
+  const reducer = reducerByType[action.type];
+  if (reducer) {
     return reducer(state, action);
   } else {
     return state;
