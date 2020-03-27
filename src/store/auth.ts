@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { ActionCreator, createActionCreator } from '../lib/redux-action';
 import { createSlice } from '../lib/redux-slice';
 
@@ -34,18 +35,29 @@ const sliceConfig = {
 // - so that actions.signin is ActionCreator<{user: User}>
 // I would like to be able to write something like this INSIDE the createSlice() function
 // to avoid asking users (slice developers) to write the calls to createActionCreator explicitly as done below.
-// But I don't know how to make the types ActionCreator<TPayload> survive from input to output
+// But I don't know how to make the types TPayload survive from input to output
 // const actionCreatorFromReducer = (reducer, key): ActionCreator<TPayload> => {
 //   return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
 // }
 // const actions = R.map(actionCreatorFromReducer, sliceConfig.reducers)
-const actions = {
-  signin: createActionCreator<{ user: User }>(`${name}.signin`),
-  signout: createActionCreator<void>(`${name}.signout`)
-} as {
+type AuthActions = {
   // Note: this demonstrates the type I need slice.actions to have
   signin: ActionCreator<{ user: User }>;
   signout: ActionCreator<void>;
 };
+// const actions = {
+//   signin: createActionCreator<{ user: User }>(`${name}.signin`),
+//   signout: createActionCreator<void>(`${name}.signout`)
+// } as AuthActions;
+const actionCreatorFromReducer = <TPayload>(
+  reducer: any, // TODO
+  key: string
+): ActionCreator<TPayload> => {
+  return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
+};
+const actionsG = R.mapObjIndexed(
+  actionCreatorFromReducer,
+  sliceConfig.reducers
+) as AuthActions;
 
-export default createSlice(sliceConfig, actions);
+export default createSlice(sliceConfig, actionsG);
