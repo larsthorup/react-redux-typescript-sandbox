@@ -7,8 +7,11 @@ export interface PayloadAction<TPayload> extends AnyAction {
   payload: TPayload;
 }
 
-export interface ActionCreator<Payload> {
+export interface AnyActionCreator {
   type: string;
+}
+
+export interface ActionCreator<Payload> extends AnyActionCreator {
   (payload: Payload): PayloadAction<Payload>;
 }
 

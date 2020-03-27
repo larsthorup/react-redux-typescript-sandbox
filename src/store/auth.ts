@@ -1,8 +1,8 @@
 import {
   AnyAction,
   createActionCreator,
-  isType,
-  PayloadAction
+  PayloadAction,
+  AnyActionCreator
 } from '../lib/redux-action';
 
 export type User = {
@@ -32,20 +32,37 @@ const sliceConfig = {
   }
 };
 
+// TODO: how to make this generic
+// - so that type T is taken from type of sliceConfig.reducers.signin which is Reducer<ActionState, PayloadAction<T>>
+// - so that actions.signin is ActionCreator<{user: User}>
 const actions = {
   signin: createActionCreator<{ user: User }>(`${name}.signin`),
   signout: createActionCreator<void>(`${name}.signout`)
 };
+
+// TODO: extract to redux-slice
+const actionCreatorByKey = actions as { [key: string]: AnyActionCreator };
+const reducerByType = sliceConfig.reducers as {
+  [key: string]: (state: AuthState, action: any) => AuthState;
+};
+const reducer = (
+  state = sliceConfig.initialState,
+  action: AnyAction
+): AuthState => {
+  const hasSameType = (key: string) => {
+    const actionCreator = actionCreatorByKey[key];
+    return actionCreator.type === action.type;
+  };
+  const type = Object.keys(sliceConfig.reducers).find(hasSameType);
+  if (type) {
+    const reducer = reducerByType[type];
+    return reducer(state, action);
+  } else {
+    return state;
+  }
+};
 export default {
   name,
   actions,
-  reducer: (state = sliceConfig.initialState, action: AnyAction): AuthState => {
-    if (isType(action, actions.signin)) {
-      return sliceConfig.reducers.signin(state, action);
-    } else if (isType(action, actions.signout)) {
-      return sliceConfig.reducers.signout(state, action);
-    } else {
-      return state;
-    }
-  }
+  reducer
 };
