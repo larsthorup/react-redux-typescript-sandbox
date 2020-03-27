@@ -1,5 +1,9 @@
 import * as R from 'ramda';
-import { ActionCreator, createActionCreator } from '../lib/redux-action';
+import {
+  ActionCreator,
+  createActionCreator,
+  AnyAction
+} from '../lib/redux-action';
 import { createSlice } from '../lib/redux-slice';
 
 export type User = {
@@ -56,4 +60,13 @@ const actionsG = R.mapObjIndexed(
   sliceConfig.reducers
 ) as Actions<typeof sliceConfig.initialState, typeof sliceConfig.reducers>;
 
-export default createSlice(sliceConfig, actionsG);
+type Slice<TState, TActions> = {
+  name: string;
+  actions: TActions;
+  reducer: (state: TState | undefined, action: AnyAction) => TState;
+};
+const slice = createSlice(sliceConfig, actionsG);
+export default slice as Slice<
+  typeof sliceConfig.initialState,
+  Actions<typeof sliceConfig.initialState, typeof sliceConfig.reducers>
+>;
