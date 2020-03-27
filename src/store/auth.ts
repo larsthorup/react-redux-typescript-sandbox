@@ -30,34 +30,30 @@ const sliceConfig = {
   }
 };
 
-// TODO: how to make this generic
-// - so that type T is taken from type of sliceConfig.reducers.signin which is Reducer<ActionState, PayloadAction<T>>
-// - so that actions.signin is ActionCreator<{user: User}>
-// I would like to be able to write something like this INSIDE the createSlice() function
-// to avoid asking users (slice developers) to write the calls to createActionCreator explicitly as done below.
-// But I don't know how to make the types TPayload survive from input to output
-// const actionCreatorFromReducer = (reducer, key): ActionCreator<TPayload> => {
-//   return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
-// }
-// const actions = R.map(actionCreatorFromReducer, sliceConfig.reducers)
-type AuthActions = {
-  // Note: this demonstrates the type I need slice.actions to have
-  signin: ActionCreator<{ user: User }>;
-  signout: ActionCreator<void>;
+// TODO: how to extract this into redux-slice
+type Actions<
+  TState,
+  TSliceReducers extends {
+    [key: string]: (state: TState, action: any) => TState;
+  }
+> = {
+  [Prop in keyof TSliceReducers]: ActionCreator<
+    Parameters<TSliceReducers[Prop]>[1]['payload'] extends {}
+      ? Parameters<TSliceReducers[Prop]>[1]['payload']
+      : void
+  >;
 };
-// const actions = {
-//   signin: createActionCreator<{ user: User }>(`${name}.signin`),
-//   signout: createActionCreator<void>(`${name}.signout`)
-// } as AuthActions;
+
 const actionCreatorFromReducer = <TPayload>(
-  reducer: any, // TODO
+  _: any,
   key: string
 ): ActionCreator<TPayload> => {
   return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
 };
+
 const actionsG = R.mapObjIndexed(
   actionCreatorFromReducer,
   sliceConfig.reducers
-) as AuthActions;
+) as Actions<typeof sliceConfig.initialState, typeof sliceConfig.reducers>;
 
 export default createSlice(sliceConfig, actionsG);
