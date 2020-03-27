@@ -37,29 +37,39 @@ const actions = {
 };
 
 // TODO: extract to redux-slice
-const reducerByType = R.fromPairs(
-  R.toPairs(
-    sliceConfig.reducers
-  ).map(
-    ([key, reducer]: [
-      string,
-      (state: AuthState, action: any) => AuthState
-    ]) => [`${name}.${key}`, reducer]
-  )
-);
-const reducer = (
-  state = sliceConfig.initialState,
-  action: AnyAction
-): AuthState => {
-  const reducer = reducerByType[action.type];
-  if (reducer) {
-    return reducer(state, action);
-  } else {
-    return state;
-  }
+type SliceConfig<TState> = {
+  initialState: TState;
+  reducers: { [key: string]: (state: TState, action: any) => TState };
 };
+const createSlice = <TState>(sliceConfig: SliceConfig<TState>) => {
+  const reducerByType = R.fromPairs(
+    R.toPairs(
+      sliceConfig.reducers
+    ).map(
+      ([key, reducer]: [string, (state: TState, action: any) => TState]) => [
+        `${name}.${key}`,
+        reducer
+      ]
+    )
+  );
+  const reducer = (
+    state = sliceConfig.initialState,
+    action: AnyAction
+  ): TState => {
+    const reducer = reducerByType[action.type];
+    if (reducer) {
+      return reducer(state, action);
+    } else {
+      return state;
+    }
+  };
+  return {
+    reducer
+  };
+};
+const slice = createSlice(sliceConfig);
 export default {
   name,
   actions,
-  reducer
+  reducer: slice.reducer
 };
