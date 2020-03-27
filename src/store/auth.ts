@@ -1,5 +1,5 @@
-import * as R from 'ramda';
-import { AnyAction, createActionCreator } from '../lib/redux-action';
+import { ActionCreator, createActionCreator } from '../lib/redux-action';
+import { createSlice } from '../lib/redux-slice';
 
 export type User = {
   name: string;
@@ -12,6 +12,7 @@ export type AuthState = Readonly<{
 const name = 'auth';
 
 const sliceConfig = {
+  name,
   initialState: {
     user: null
   } as AuthState,
@@ -31,45 +32,20 @@ const sliceConfig = {
 // TODO: how to make this generic
 // - so that type T is taken from type of sliceConfig.reducers.signin which is Reducer<ActionState, PayloadAction<T>>
 // - so that actions.signin is ActionCreator<{user: User}>
+// I would like to be able to write something like this INSIDE the createSlice() function
+// to avoid asking users (slice developers) to write the calls to createActionCreator explicitly as done below.
+// But I don't know how to make the types ActionCreator<TPayload> survive from input to output
+// const actionCreatorFromReducer = (reducer, key): ActionCreator<TPayload> => {
+//   return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
+// }
+// const actions = R.map(actionCreatorFromReducer, sliceConfig.reducers)
 const actions = {
   signin: createActionCreator<{ user: User }>(`${name}.signin`),
   signout: createActionCreator<void>(`${name}.signout`)
+} as {
+  // Note: this demonstrates the type I need slice.actions to have
+  signin: ActionCreator<{ user: User }>;
+  signout: ActionCreator<void>;
 };
 
-// TODO: extract to redux-slice
-type SliceConfig<TState> = {
-  initialState: TState;
-  reducers: { [key: string]: (state: TState, action: any) => TState };
-};
-const createSlice = <TState>(sliceConfig: SliceConfig<TState>) => {
-  const reducerByType = R.fromPairs(
-    R.toPairs(
-      sliceConfig.reducers
-    ).map(
-      ([key, reducer]: [string, (state: TState, action: any) => TState]) => [
-        `${name}.${key}`,
-        reducer
-      ]
-    )
-  );
-  const reducer = (
-    state = sliceConfig.initialState,
-    action: AnyAction
-  ): TState => {
-    const reducer = reducerByType[action.type];
-    if (reducer) {
-      return reducer(state, action);
-    } else {
-      return state;
-    }
-  };
-  return {
-    reducer
-  };
-};
-const slice = createSlice(sliceConfig);
-export default {
-  name,
-  actions,
-  reducer: slice.reducer
-};
+export default createSlice(sliceConfig, actions);
