@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { AnyAction, ActionCreator } from './redux-action';
+import { AnyAction, ActionCreator, createActionCreator } from './redux-action';
 
 type Actions<
   TState,
@@ -37,9 +37,19 @@ export const createSlice = <
     [key: string]: (state: TState, action: any) => TState;
   }
 >(
-  sliceConfig: SliceConfig<TState, TSliceReducers>,
-  actions: Actions<TState, TSliceReducers>
+  sliceConfig: SliceConfig<TState, TSliceReducers>
 ): Slice<TState, Actions<TState, TSliceReducers>> => {
+  const actionCreatorFromReducer = <TPayload>(
+    _: any,
+    key: string
+  ): ActionCreator<TPayload> => {
+    return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
+  };
+
+  const actions = R.mapObjIndexed(
+    actionCreatorFromReducer,
+    sliceConfig.reducers
+  ) as Actions<typeof sliceConfig.initialState, typeof sliceConfig.reducers>;
   const reducerByType = R.fromPairs(
     R.toPairs(
       sliceConfig.reducers
