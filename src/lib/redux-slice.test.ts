@@ -1,5 +1,5 @@
 import * as Redux from 'redux';
-import { createSlice, Reducer } from '../lib/redux-slice';
+import { createSlice, SliceReducer } from '../lib/redux-slice';
 
 type User = {
   name: string;
@@ -14,13 +14,13 @@ test('createSlice', () => {
   const initialState = {
     user: null
   } as AuthState;
-  const signin: Reducer<AuthState, { user: User }> = (
+  const signin: SliceReducer<AuthState, { user: User }> = (
     state,
     { payload: { user } }
   ) => {
     return { ...state, user };
   };
-  const signout: Reducer<AuthState> = state => {
+  const signout: SliceReducer<AuthState> = state => {
     return { ...state, user: null };
   };
   const slice = createSlice({

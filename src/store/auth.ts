@@ -1,4 +1,4 @@
-import { createSlice, Reducer } from '../lib/redux-slice';
+import { createSlice, SliceReducer } from '../lib/redux-slice';
 
 export type User = {
   name: string;
@@ -8,18 +8,18 @@ export type AuthState = Readonly<{
   user: User | null;
 }>;
 
-const initialState = {
+const initialState: AuthState = {
   user: null
-} as AuthState;
+};
 
-const signin: Reducer<AuthState, { user: User }> = (
+const signin: SliceReducer<AuthState, { user: User }> = (
   state,
   { payload: { user } }
 ) => {
   return { ...state, user };
 };
 
-const signout: Reducer<AuthState> = state => {
+const signout: SliceReducer<AuthState> = state => {
   return { ...state, user: null };
 };
 

@@ -3,28 +3,20 @@ import { AnyAction, ActionCreator, createActionCreator } from './redux-action';
 
 // TODO: remove duplication
 
-export type Reducer<TState, TPayload = void> = (
-  state: TState,
-  action: { payload: TPayload }
+// SliceReducer can be used to type the reducers in a slice
+export type SliceReducer<TState, TPayload = void> = (
+  state: TState, // Note: state is never undefined
+  action: { payload: TPayload } // Note: action always have payload
 ) => TState;
 
-type Actions<
-  TState,
-  TSliceReducers extends {
-    [key: string]: (state: TState, action: any) => TState;
-  }
-> = {
-  [Prop in keyof TSliceReducers]: ActionCreator<
-    Parameters<TSliceReducers[Prop]>[1]['payload'] extends {}
-      ? Parameters<TSliceReducers[Prop]>[1]['payload']
-      : void
-  >;
-};
+// Reducer is used below to type the "reducer" returned by createSlice()
+type Reducer<TState> = (state: TState | undefined, action: AnyAction) => TState;
 
+// SliceConfig can be used to type the parameter to createSlice()
 type SliceConfig<
   TState,
   TSliceReducers extends {
-    [key: string]: (state: TState, action: any) => TState;
+    [key: string]: SliceReducer<TState, any>;
   }
 > = {
   name: string;
@@ -32,20 +24,27 @@ type SliceConfig<
   reducers: TSliceReducers;
 };
 
-type Slice<TState, TActions> = {
+// Slice can be used to type the result of createSlice()
+type Slice<
+  TState,
+  TSliceReducers extends {
+    [key: string]: SliceReducer<TState, any>;
+  }
+> = {
   name: string;
-  actions: TActions;
-  reducer: (state: TState | undefined, action: AnyAction) => TState;
+  actions: Actions<TState, TSliceReducers>;
+  reducer: Reducer<TState>;
 };
 
+// createSlice transforms SliceReducers to Redux-compatible Actions and a Reducer
 export const createSlice = <
   TState,
   TSliceReducers extends {
-    [key: string]: (state: TState, action: any) => TState;
+    [key: string]: SliceReducer<TState, any>;
   }
 >(
   sliceConfig: SliceConfig<TState, TSliceReducers>
-): Slice<TState, Actions<TState, TSliceReducers>> => {
+): Slice<TState, TSliceReducers> => {
   const actionCreatorFromReducer = <TPayload>(
     _: any,
     key: string
@@ -57,6 +56,7 @@ export const createSlice = <
     actionCreatorFromReducer,
     sliceConfig.reducers
   ) as Actions<typeof sliceConfig.initialState, typeof sliceConfig.reducers>;
+
   const reducerByType = R.fromPairs(
     R.toPairs(
       sliceConfig.reducers
@@ -78,9 +78,29 @@ export const createSlice = <
       return state;
     }
   };
+
   return {
     name: sliceConfig.name,
     actions,
     reducer
   };
 };
+
+// Actions is used in Slice to type the "actions" returned by createSlice()
+type Actions<
+  TState,
+  TSliceReducers extends {
+    [key: string]: SliceReducer<TState, any>;
+  }
+> = {
+  [Prop in keyof TSliceReducers]: ActionCreator<
+    PayloadParameterTypeOf<TSliceReducers[Prop]>
+  >;
+};
+
+// PayloadParameterTypeOf is used by Actions to extract the type of the "payload" of the "action" parameter of a slice reducer
+type PayloadParameterTypeOf<
+  TSliceReducer extends SliceReducer<any, any>
+> = Parameters<TSliceReducer>[1]['payload'] extends {}
+  ? Parameters<TSliceReducer>[1]['payload']
+  : void;
