@@ -1,6 +1,13 @@
 import * as R from 'ramda';
 import { AnyAction, ActionCreator, createActionCreator } from './redux-action';
 
+// TODO: remove duplication
+
+export type Reducer<TState, TPayload = void> = (
+  state: TState,
+  action: { payload: TPayload }
+) => TState;
+
 type Actions<
   TState,
   TSliceReducers extends {
