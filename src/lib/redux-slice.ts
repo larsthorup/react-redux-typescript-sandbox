@@ -1,8 +1,6 @@
 import * as R from 'ramda';
 import { AnyAction, ActionCreator, createActionCreator } from './redux-action';
 
-// TODO: remove duplication
-
 // SliceReducer can be used to type the reducers in a slice
 export type SliceReducer<TState, TPayload = void> = (
   state: TState, // Note: state is never undefined
@@ -59,43 +57,33 @@ type PayloadParameterTypeOf<
   ? Parameters<TSliceReducer>[1]['payload']
   : void;
 
+// createActions() uses createActionCreator() to turn sliceReducers into actions
 const createActions = <TState, TSliceReducers extends SliceReducers<any>>(
   sliceConfig: SliceConfig<TState, TSliceReducers>
-): Actions<TState, TSliceReducers> => {
-  const actionCreatorFromReducer = <TPayload>(
-    _: any,
-    key: string
-  ): ActionCreator<TPayload> => {
-    return createActionCreator<TPayload>(`${sliceConfig.name}.${key}`);
-  };
-
-  const actions = R.mapObjIndexed(
-    actionCreatorFromReducer,
+) => {
+  return R.mapObjIndexed(
+    (_, key: string) => createActionCreator(`${sliceConfig.name}.${key}`),
     sliceConfig.reducers
   ) as Actions<TState, TSliceReducers>;
-  return actions;
 };
 
+// createReducer applies the sliceReducer corresponding to the passed in action
 const createReducer = <TState, TSliceReducers extends SliceReducers<any>>(
   sliceConfig: SliceConfig<TState, TSliceReducers>
-): Reducer<TState> => {
-  const reducerByType = R.fromPairs(
-    R.toPairs(
-      sliceConfig.reducers
-    ).map(
-      ([key, reducer]: [string, (state: TState, action: any) => TState]) => [
-        `${sliceConfig.name}.${key}`,
-        reducer
-      ]
-    )
+) => {
+  const sliceReducerByType = R.fromPairs(
+    R.toPairs(sliceConfig.reducers).map(([key, r]: [string, any]) => [
+      `${sliceConfig.name}.${key}`,
+      r
+    ])
   );
   const reducer = (
     state = sliceConfig.initialState,
     action: AnyAction
   ): TState => {
-    const reducer = reducerByType[action.type];
-    if (reducer) {
-      return reducer(state, action);
+    const sliceReducer = sliceReducerByType[action.type];
+    if (sliceReducer) {
+      return sliceReducer(state, action);
     } else {
       return state;
     }
