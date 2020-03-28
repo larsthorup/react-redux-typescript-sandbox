@@ -1,16 +1,45 @@
 import * as R from 'ramda';
-import { AnyAction } from './redux-action';
+import { AnyAction, ActionCreator } from './redux-action';
 
-type SliceConfig<TState> = {
-  name: string;
-  initialState: TState;
-  reducers: { [key: string]: (state: TState, action: any) => TState };
+type Actions<
+  TState,
+  TSliceReducers extends {
+    [key: string]: (state: TState, action: any) => TState;
+  }
+> = {
+  [Prop in keyof TSliceReducers]: ActionCreator<
+    Parameters<TSliceReducers[Prop]>[1]['payload'] extends {}
+      ? Parameters<TSliceReducers[Prop]>[1]['payload']
+      : void
+  >;
 };
 
-export const createSlice = <TState, TActions>(
-  sliceConfig: SliceConfig<TState>,
-  actions: TActions
-) => {
+type SliceConfig<
+  TState,
+  TSliceReducers extends {
+    [key: string]: (state: TState, action: any) => TState;
+  }
+> = {
+  name: string;
+  initialState: TState;
+  reducers: TSliceReducers;
+};
+
+type Slice<TState, TActions> = {
+  name: string;
+  actions: TActions;
+  reducer: (state: TState | undefined, action: AnyAction) => TState;
+};
+
+export const createSlice = <
+  TState,
+  TSliceReducers extends {
+    [key: string]: (state: TState, action: any) => TState;
+  }
+>(
+  sliceConfig: SliceConfig<TState, TSliceReducers>,
+  actions: Actions<TState, TSliceReducers>
+): Slice<TState, Actions<TState, TSliceReducers>> => {
   const reducerByType = R.fromPairs(
     R.toPairs(
       sliceConfig.reducers
