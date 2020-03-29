@@ -1,10 +1,15 @@
 import * as R from 'ramda';
-import { AnyAction, ActionCreator, createActionCreator } from './redux-action';
+import {
+  AnyAction,
+  ActionCreator,
+  createActionCreator,
+  PayloadAction
+} from './redux-action';
 
 // SliceReducer can be used to type the reducers in a slice
 export type SliceReducer<TState, TPayload = void> = (
   state: TState, // Note: state is never undefined
-  action: { payload: TPayload } // Note: action always have payload
+  payload: TPayload // Note: receives payload directly
 ) => TState;
 
 // SliceReducers is used below to restrict the type of a set of reducers in a slice
@@ -50,11 +55,11 @@ type Actions<TState, TSliceReducers extends SliceReducers<TState>> = {
   >;
 };
 
-// PayloadParameterTypeOf is used by Actions to extract the type of the "payload" of the "action" parameter of a slice reducer
+// PayloadParameterTypeOf is used by Actions to extract the type of the "payload" parameter of a slice reducer
 type PayloadParameterTypeOf<
   TSliceReducer extends SliceReducer<any, any>
-> = Parameters<TSliceReducer>[1]['payload'] extends {}
-  ? Parameters<TSliceReducer>[1]['payload']
+> = Parameters<TSliceReducer>[1] extends {}
+  ? Parameters<TSliceReducer>[1]
   : void;
 
 // createActions() uses createActionCreator() to turn sliceReducers into actions
@@ -83,7 +88,7 @@ const createReducer = <TState, TSliceReducers extends SliceReducers<any>>(
   ): TState => {
     const sliceReducer = sliceReducerByType[action.type];
     if (sliceReducer) {
-      return sliceReducer(state, action);
+      return sliceReducer(state, (action as PayloadAction<any>).payload);
     } else {
       return state;
     }

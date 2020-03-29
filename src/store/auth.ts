@@ -12,10 +12,7 @@ const initialState: AuthState = {
   user: null
 };
 
-const signin: SliceReducer<AuthState, { user: User }> = (
-  state,
-  { payload: { user } }
-) => {
+const signin: SliceReducer<AuthState, { user: User }> = (state, { user }) => {
   return { ...state, user };
 };
 
