@@ -13,7 +13,7 @@ const LoginForm: React.FC = () => {
     setUsername(e.target.value);
   const onSubmit: React.FormEventHandler = e => {
     e.preventDefault();
-    dispatch(signingIn(username));
+    dispatch(signingIn({ username }));
   };
   return (
     <form className="LoginForm" onSubmit={onSubmit}>
