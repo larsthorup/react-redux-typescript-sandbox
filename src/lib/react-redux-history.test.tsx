@@ -25,26 +25,28 @@ test('react-redux-history', async () => {
   );
   const store: Store = Redux.createStore(rootReducer, middleware);
   ReduxHistory.listen(store);
+  const RoutePath = {
+    Home: '/',
+    Profile: '/profile/:id',
+    Signin: '/signin'
+  };
   const Home = () => {
     const navigate = ReactReduxHistory.useNavigate();
     return (
       <>
         <div>Home</div>
-        <button onClick={navigate('/signin')}>Login</button>
-        <button onClick={navigate('/profile/47', { tab: 'all' })}>
+        <button onClick={navigate(RoutePath.Signin)}>Login</button>
+        <button
+          onClick={navigate(RoutePath.Profile, { id: '%20' }, { tab: 'all' })}
+        >
           Profile
         </button>
       </>
     );
   };
   const Signin = () => <div>Signin</div>;
-  const RoutePaths = {
-    Home: '/',
-    Profile: '/profile/:id',
-    Signin: '/signin'
-  };
   const Profile = () => {
-    const { id } = usePath<{ id: string }>(RoutePaths.Profile);
+    const { id } = usePath<{ id: string }>(RoutePath.Profile);
     const { tab } = useHash<{ tab: string }>();
     return (
       <div>
@@ -53,9 +55,9 @@ test('react-redux-history', async () => {
     );
   };
   const routes: ReactReduxHistory.Routes = {
-    [RoutePaths.Home]: <Home />,
-    [RoutePaths.Profile]: <Profile />,
-    [RoutePaths.Signin]: <Signin />
+    [RoutePath.Home]: <Home />,
+    [RoutePath.Profile]: <Profile />,
+    [RoutePath.Signin]: <Signin />
   };
   const App = () => {
     const routeResult = useRoutes(routes);
@@ -87,7 +89,7 @@ test('react-redux-history', async () => {
   fireEvent.click(getByText('Profile'));
 
   // then Profile is rendered with that parameter
-  await wait(() => getByText('Profile-47-all'));
+  await wait(() => getByText('Profile-%20-all'));
 
   // when navigating to non-existing page
   ReduxHistory.history.push('/notyet');

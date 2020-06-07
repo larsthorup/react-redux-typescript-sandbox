@@ -20,7 +20,7 @@ export type Props = Readonly<{
 
 const stringify = (state: State): History.Location => ({
   hash: queryString.stringify(state.hash || {}),
-  pathname: state.pathname,
+  pathname: encodeURI(state.pathname),
   search: queryString.stringify(state.search || {}),
   state: null
 });
@@ -87,7 +87,12 @@ export const listen = (store: Store): Listener => {
     store.dispatch(locationChanged(location));
   });
   const { location } = history;
-  store.dispatch(locationChanged(location)); // Note: initial location
+  store.dispatch(
+    locationChanged({
+      ...location,
+      pathname: encodeURI(location.pathname)
+    })
+  ); // Note: initial location
   return { unlisten };
 };
 
