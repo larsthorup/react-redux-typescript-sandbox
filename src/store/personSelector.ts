@@ -27,3 +27,11 @@ export const selectPeopleAge: Selector<{
   (state: RootState) => state.person,
   ({ birthDate }) => ageOf(birthDate)
 );
+
+export const selectAverageAge: Selector<number> = createSelector(
+  selectPeopleAge,
+  age => {
+    const idList = Object.keys(age);
+    return idList.reduce((sum, id) => sum + age[id], 0) / idList.length;
+  }
+);
