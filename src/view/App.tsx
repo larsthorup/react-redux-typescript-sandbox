@@ -8,11 +8,13 @@ import { useRoutes } from '../store';
 import './App.css';
 
 const Profile = React.lazy(() => import('./Profile'));
+const People = React.lazy(() => import('./People'));
 
 const routes: Routes = {
   '/': <Home />,
   '/signin': <LoginForm />,
-  '/profile': <Profile />
+  '/profile': <Profile />,
+  '/people': <People />
 };
 
 const App: React.FC = () => {

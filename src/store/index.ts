@@ -5,10 +5,12 @@ import * as ReduxHistory from '../lib/redux-history';
 import * as ReactReduxHistory from '../lib/react-redux-history';
 
 import auth from './auth';
+import person from './person';
 import { locationReducer } from './location';
 
 export const rootReducer = Redux.combineReducers({
   auth: auth.reducer,
+  person: person.reducer,
   location: locationReducer
 });
 
