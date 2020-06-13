@@ -2,20 +2,19 @@ import * as R from 'ramda';
 import { createSelector } from 'reselect';
 import { createObjectSelector } from 'reselect-map';
 import cacheResultOf from '../lib/cacheResultOf';
-import { RootState, Selector } from '.';
-import { PersonState } from './person';
+import { Selector } from '.';
 
-export const selectPeopleIdByName: Selector<string[]> = cacheResultOf(
+export const selectPeopleIdByName = cacheResultOf(
   createSelector(
-    (state: RootState) => state.person,
-    (person: PersonState) => {
+    state => state.person,
+    person => {
       return R.sortBy(p => p.name, Object.values(person)).map(p => p.id);
     }
-  )
+  ) as Selector<string[]>
 );
 
 const ageOf = (date: string) => {
-  console.log(date);
+  // console.log(date);
   return Math.trunc(
     (Date.now() - Date.parse(date)) / (24 * 60 * 60 * 1000 * 365)
   );
@@ -24,7 +23,7 @@ const ageOf = (date: string) => {
 export const selectPeopleAge: Selector<{
   [id: string]: number;
 }> = createObjectSelector(
-  (state: RootState) => state.person,
+  state => state.person,
   ({ birthDate }) => ageOf(birthDate)
 );
 

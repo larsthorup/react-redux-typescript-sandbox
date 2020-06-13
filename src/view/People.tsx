@@ -7,28 +7,35 @@ import {
   selectAverageAge as selectPersonAgeAverage
 } from '../store/personSelector';
 import Table, { TableColumn } from '../lib/react-table';
+import { historyBack } from '../lib/redux-history';
 
 const PeopleTable: React.FC = () => {
+  const dispatch = useDispatch();
   const personIdList = useSelector(selectPeopleIdByName);
-  const rows = personIdList.concat(['']); // Note: '' used to indicate the last row for totals
+  const rows = personIdList.concat(['']); // Note: '' used to indicate the extra row for totals
   const columns: TableColumn<typeof rows[0]>[] = [
     { title: '', cell: '' },
     { title: 'Name', cell: id => (id ? <Name id={id} /> : '') },
     { title: 'Age', cell: id => (id ? <Age id={id} /> : <AverageAge />) },
     { title: '', cell: id => (id ? <UpdateButton id={id} /> : '') }
   ];
-  return <Table columns={columns} rows={rows} />;
+  return (
+    <>
+      <Table columns={columns} rows={rows} />
+      <button onClick={() => dispatch(historyBack())}>Back</button>
+    </>
+  );
 };
 
 const Name: React.FC<{ id: string }> = ({ id }) => {
   const { name } = useSelector(state => state.person[id]);
-  console.log(name);
-  return <>{name}</>;
+  // console.log(name);
+  return <span>{name}</span>;
 };
 
 const Age: React.FC<{ id: string }> = ({ id }) => {
   const age = useSelector(state => selectPeopleAge(state)[id]);
-  return <>{age}</>;
+  return <span>{age}</span>;
 };
 
 const UpdateButton: React.FC<{ id: string }> = ({ id }) => {
@@ -42,7 +49,7 @@ const UpdateButton: React.FC<{ id: string }> = ({ id }) => {
 
 const AverageAge: React.FC = () => {
   const averageAge = useSelector(selectPersonAgeAverage);
-  return <>{averageAge}</>;
+  return <span>{averageAge}</span>;
 };
 
 export default PeopleTable;

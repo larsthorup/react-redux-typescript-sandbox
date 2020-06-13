@@ -35,6 +35,7 @@ const stringifyProps = (props: Props): History.Location =>
 const locationChanged = createActionCreator<History.Location>(
   'locationChanged'
 ); // Note: for internal use only
+export const historyBack = createActionCreator('historyBack');
 export const historyPush = createActionCreator<Props>('historyPush');
 export const historyReplace = createActionCreator<Props>('historyReplace');
 
@@ -64,7 +65,9 @@ export const createMiddleware = (
   slicer: Slicer
 ): Middleware => store => next => (action: AnyAction) => {
   const state = slicer(store.getState());
-  if (isType(action, historyPush)) {
+  if (isType(action, historyBack)) {
+    history.goBack();
+  } else if (isType(action, historyPush)) {
     const { payload } = action;
     if (!R.equals(state, payload)) {
       history.push(stringifyProps(payload));

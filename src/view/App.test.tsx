@@ -1,20 +1,20 @@
-import React from 'react';
-import { render, wait } from '@testing-library/react';
+import { render, screen, wait } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { createRootElement } from '../root';
 import App from './App';
 
 test('auth flow', async () => {
-  const getLoggedOutStatus = () => getByText('Please');
-  const getLoggedInStatus = () => getByText('Lars');
-  const getLogoutButton = () => getByText('Logout');
-  const getLoginButton = () => getByText('Login');
-  const getSigninButton = () => getByText('Sign in');
-  const getProfileButton = () => getByText('Profile');
+  const getLoggedOutStatus = () => screen.getByText('Please');
+  const getLoggedInStatus = () => screen.getByText('Lars');
+  const getLogoutButton = () => screen.getByText('Logout');
+  const getLoginButton = () => screen.getByText('Login');
+  const getSigninButton = () => screen.getByText('Sign in');
+  const getProfileButton = () => screen.getByText('Profile');
+  const getPeopleButton = () => screen.getByText('People');
 
   // When: rendered
-  const { getByPlaceholderText, getByText } = render(createRootElement());
+  render(createRootElement());
 
   // Then: is logged out
   expect(getLoggedOutStatus()).toBeInTheDocument();
@@ -23,8 +23,8 @@ test('auth flow', async () => {
   userEvent.click(getSigninButton());
 
   // When: login
-  const usernameInput = getByPlaceholderText('User name');
-  const passwordInput = getByPlaceholderText('Password');
+  const usernameInput = screen.getByPlaceholderText('User name');
+  const passwordInput = screen.getByPlaceholderText('Password');
   userEvent.type(usernameInput, 'Lars');
   userEvent.type(passwordInput, 'whatever');
   userEvent.click(getLoginButton());
@@ -32,7 +32,23 @@ test('auth flow', async () => {
   // When: waiting for fetch
   await wait(getProfileButton);
 
-  // Then: is logged in
+  // Then: is on home page
+  expect(getPeopleButton()).toBeInTheDocument();
+
+  // When: navigate to people page
+  userEvent.click(getPeopleButton());
+
+  // Then: on people page
+  expect(await screen.findByText('Ronja')).toBeInTheDocument();
+
+  // When: invoke "random" button
+  userEvent.click(screen.getAllByText('random')[0]);
+
+  // When: navigate back
+  userEvent.click(screen.getByText('Back'));
+
+  // Then: is on home page:
+  await screen.findByText('Profile');
   expect(getProfileButton()).toBeInTheDocument();
 
   // When: navigate to profile
