@@ -1,14 +1,13 @@
-import * as R from 'ramda';
 import { createSelector } from 'reselect';
 import { createObjectSelector } from 'reselect-map';
 import cacheResultOf from '../lib/cacheResultOf';
 import { Selector } from '.';
 
-export const selectPeopleIdByName = cacheResultOf(
+export const selectPeopleId = cacheResultOf(
   createSelector(
     state => state.person,
     person => {
-      return R.sortBy(p => p.name, Object.values(person)).map(p => p.id);
+      return Object.values(person).map(p => p.id);
     }
   ) as Selector<string[]>
 );

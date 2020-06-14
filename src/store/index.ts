@@ -3,6 +3,7 @@ import * as ReduxThunk from 'redux-thunk';
 import * as ReactRedux from 'react-redux';
 import * as ReduxHistory from '../lib/redux-history';
 import * as ReactReduxHistory from '../lib/react-redux-history';
+import * as ReactReduxTable from '../lib/react-redux-table';
 
 import auth from './auth';
 import person from './person';
@@ -32,6 +33,7 @@ export type Dispatch = ReduxThunk.ThunkDispatch<
 export interface Store extends Redux.Store<RootState> {
   dispatch: Dispatch;
 }
+export type TableColumn<TRow> = ReactReduxTable.TableColumn<RootState, TRow>;
 
 const locationSlicer = (state: RootState) => state.location;
 export const historyMiddleware = ReduxHistory.createMiddleware(locationSlicer);
