@@ -1,21 +1,46 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from '../lib/react-redux-history';
 
 import { useDispatch, useSelector } from '../store';
 import { signingOut } from '../saga/auth';
-import { User } from '../store/auth';
+import auth, { User } from '../store/auth';
+import TextField from './TextField';
 
 const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   const dispatch = useDispatch();
-  const onClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const [isEditEnabled, setIsEditEnabled] = useState(false);
+  const logoutHandler = () => {
     dispatch(signingOut());
   };
+  const nameChangeHandler = useCallback((name: string) => {
+    dispatch(auth.actions.changeUserName({ name }));
+  }, []);
+  const editHandler = () => {
+    setIsEditEnabled(true);
+  };
+  const cancelHandler = () => {
+    setIsEditEnabled(false);
+  };
   return (
-    <p>
-      {user.name}
-      <button onClick={onClick}>Logout</button>
-    </p>
+    <>
+      <p>
+        {!isEditEnabled && (
+          <>
+            <span>{user.name}</span>
+            <button onClick={editHandler}>Edit</button>
+          </>
+        )}
+        {isEditEnabled && (
+          <>
+            <TextField value={user.name} onChange={nameChangeHandler} />
+            <button onClick={cancelHandler}>Cancel</button>
+          </>
+        )}
+      </p>
+      <p>
+        <button onClick={logoutHandler}>Logout</button>
+      </p>
+    </>
   );
 };
 
