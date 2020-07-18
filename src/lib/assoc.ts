@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import iassign from 'immutable-assign';
 
 /*
@@ -14,6 +15,43 @@ export const assoc: <S, P>(
   s: S
 ) => S = (get, set, s) => {
   return iassign(s, get, set);
+};
+
+// class Assoc<S, P> {
+//   private s: S;
+//   private selector?: (s: S) => P;
+//   constructor(s: S) {
+//     this.s = s;
+//   }
+//   set(selector: (s: S) => P): Assoc<S, P> {
+//     this.selector = selector;
+//     return this;
+//   }
+//   to(creator: (p: Readonly<P>) => P): S {
+//     return assoc(this.selector!, creator, this.s);
+//   }
+// }
+
+class Assoc<S, P> {
+  private selector: (s: S) => P;
+  private creator?: (p: Readonly<P>) => P;
+  constructor(selector: (s: S) => P) {
+    this.selector = selector;
+  }
+  to(creator: (p: Readonly<P>) => P): Assoc<S, P> {
+    this.creator = creator;
+    return this;
+  }
+  in(s: S): S {
+    assert.ok(this.creator);
+    return assoc(this.selector, this.creator!, s);
+  }
+}
+
+export const update: <S, P>(
+  selector: (s: S) => P
+) => Assoc<S, P> = selector => {
+  return new Assoc(selector);
 };
 
 /*

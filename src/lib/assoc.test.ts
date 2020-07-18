@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import produce from 'immer';
 import iassign from 'immutable-assign';
-import { assoc, dissoc } from './assoc';
+import { assoc, dissoc, update } from './assoc';
 
 type State = {
   chat: {
@@ -82,10 +82,11 @@ describe('syntax', () => {
     );
     expect(newState).toEqual(expected);
 
-    // // update: type-safe, doesn't look mutable, no duplication, fluent
-    // const newState2 = update(state)
-    //   .set(state => state.chat.contact[1])
-    //   .to(c => ({ ...c, name: 'Andrea' }));
+    // update: type-safe, doesn't look mutable, no duplication, fluent
+    const newState2 = update((state: State) => state.chat.contact[1])
+      .to(c => ({ ...c, name: 'Andrea' }))
+      .in(state);
+    expect(newState2).toEqual(expected);
   });
 
   test('dissoc', () => {
