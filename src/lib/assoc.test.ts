@@ -73,14 +73,19 @@ describe('syntax', () => {
 
     // assoc, type-safe, doesn't look mutable, no duplication
     const newState = assoc(
-      state,
       s => s.chat.contact['1'],
       c => ({
         ...c,
         name: 'Andrea'
-      })
+      }),
+      state
     );
     expect(newState).toEqual(expected);
+
+    // // update: type-safe, doesn't look mutable, no duplication, fluent
+    // const newState2 = update(state)
+    //   .set(state => state.chat.contact[1])
+    //   .to(c => ({ ...c, name: 'Andrea' }));
   });
 
   test('dissoc', () => {
@@ -135,7 +140,7 @@ describe('syntax', () => {
     expect(newStateIassign).toEqual(expected);
 
     // dissoc, type-safe, doesn't look mutable, no duplication
-    const newState = dissoc(state, s => s.chat.contact, '1');
+    const newState = dissoc(s => s.chat.contact, '1', state);
     expect(newState).toEqual(expected);
   });
 });
@@ -152,9 +157,9 @@ describe('semantics', () => {
         }
       };
       const newState = assoc(
-        state,
         s => s.chat.contact['1'].name,
-        _ => 'Andrea'
+        _ => 'Andrea',
+        state
       );
       expect(newState).toEqual({
         chat: {
@@ -184,9 +189,9 @@ describe('semantics', () => {
         }
       };
       const newState = assoc(
-        state,
         s => s.chat.contact['1'],
-        c => ({ ...c, name: 'Andrea' })
+        c => ({ ...c, name: 'Andrea' }),
+        state
       );
       expect(newState).toEqual({
         chat: {
@@ -216,9 +221,9 @@ describe('semantics', () => {
         }
       };
       const newState = assoc(
-        state,
         s => s.chat.contact,
-        c => ({ ...c, '3': { id: '3', name: 'Andrea' } })
+        c => ({ ...c, '3': { id: '3', name: 'Andrea' } }),
+        state
       );
       expect(newState).toEqual({
         chat: {
@@ -269,7 +274,7 @@ describe('performance', () => {
       );
     }
     const ramdaOpsPerSecond = opsPerSecond(ramdaStart);
-    console.log('ramda', ramdaOpsPerSecond);
+    console.log(`ramda: ${ramdaOpsPerSecond} ops/sec`);
 
     // typescript
     const typescriptStart = process.hrtime.bigint();
@@ -289,7 +294,7 @@ describe('performance', () => {
       };
     }
     const typescriptOpsPerSecond = opsPerSecond(typescriptStart);
-    console.log('typescript', typescriptOpsPerSecond);
+    console.log(`typescript: ${typescriptOpsPerSecond} ops/sec`);
 
     // iassign
     const iassignStart = process.hrtime.bigint();
@@ -304,22 +309,22 @@ describe('performance', () => {
       );
     }
     const iassignOpsPerSecond = opsPerSecond(iassignStart);
-    console.log('iassign', iassignOpsPerSecond);
+    console.log(`iassign: ${iassignOpsPerSecond} ops/sec`);
 
     // assoc
     const assocStart = process.hrtime.bigint();
     for (let i = 0; i < ops; ++i) {
       const newState = assoc(
-        state,
         s => s.chat.contact['1'],
         c => ({
           ...c,
           name: 'Andrea'
-        })
+        }),
+        state
       );
     }
     const assocOpsPerSecond = opsPerSecond(assocStart);
-    console.log('assoc', assocOpsPerSecond);
+    console.log(`assoc: ${assocOpsPerSecond} ops/sec`);
 
     // immer
     const immerStart = process.hrtime.bigint();
@@ -329,16 +334,17 @@ describe('performance', () => {
       });
     }
     const immerOpsPerSecond = opsPerSecond(immerStart);
-    console.log('immer', immerOpsPerSecond);
+    console.log(`immer: ${immerOpsPerSecond} ops/sec`);
 
     expect(ramdaOpsPerSecond).toBeGreaterThan(typescriptOpsPerSecond);
     expect(typescriptOpsPerSecond).toBeGreaterThan(iassignOpsPerSecond);
-    expect(iassignOpsPerSecond).toBeGreaterThan(assocOpsPerSecond);
+    expect(typescriptOpsPerSecond).toBeGreaterThan(assocOpsPerSecond);
+    expect(iassignOpsPerSecond).toBeGreaterThan(immerOpsPerSecond);
     expect(assocOpsPerSecond).toBeGreaterThan(immerOpsPerSecond);
 
     expect(ramdaOpsPerSecond).not.toBeGreaterThan(4 * typescriptOpsPerSecond);
     expect(ramdaOpsPerSecond).not.toBeGreaterThan(6 * iassignOpsPerSecond);
-    expect(ramdaOpsPerSecond).not.toBeGreaterThan(7 * assocOpsPerSecond);
+    expect(ramdaOpsPerSecond).not.toBeGreaterThan(6 * assocOpsPerSecond);
     expect(ramdaOpsPerSecond).not.toBeGreaterThan(12 * immerOpsPerSecond);
   });
 });
