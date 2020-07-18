@@ -30,6 +30,8 @@ describe('syntax', () => {
       }
     };
 
+    const key = '1';
+
     // typescript, duplicated identifiers
     const newStateT = {
       ...state,
@@ -37,8 +39,8 @@ describe('syntax', () => {
         ...state.chat,
         contact: {
           ...state.chat.contact,
-          ['1']: {
-            ...state.chat.contact['1'],
+          [key]: {
+            ...state.chat.contact[key],
             name: 'Andrea'
           }
         }
@@ -48,7 +50,7 @@ describe('syntax', () => {
 
     // ramda, not type safe, not refactorable
     const newStateRamda = R.assocPath(
-      ['chat', 'contact', '1', 'name'],
+      ['chat', 'contact', key, 'name'],
       'Andrea',
       state
     );
@@ -56,14 +58,14 @@ describe('syntax', () => {
 
     // immer, looks mutable
     const newStateImmer = produce(state, draft => {
-      draft.chat.contact[1].name = 'Andrea';
+      draft.chat.contact[key].name = 'Andrea';
     });
     expect(newStateImmer).toEqual(expected);
 
     // iassign, looks somewhat mutable
     const newStateIassign = iassign(
       state,
-      s => s.chat.contact['1'],
+      s => s.chat.contact[key],
       c => {
         c.name = 'Andrea';
         return c;
@@ -73,7 +75,7 @@ describe('syntax', () => {
 
     // assoc, type-safe, doesn't look mutable, no duplication
     const newState = assoc(
-      s => s.chat.contact['1'],
+      s => s.chat.contact[key],
       c => ({
         ...c,
         name: 'Andrea'
@@ -83,14 +85,14 @@ describe('syntax', () => {
     expect(newState).toEqual(expected);
 
     // update: type-safe, doesn't look mutable, no duplication, fluent
-    const newState2 = update2((state: State) => state.chat.contact[1])
+    const newState2 = update2((state: State) => state.chat.contact[key])
       .to(c => ({ ...c, name: 'Andrea' }))
       .in(state);
     expect(newState2).toEqual(expected);
 
     // update: type-safe, doesn't look mutable, no duplication, fluent
     const newState3 = update(state)
-      .set(state => state.chat.contact[1])
+      .set(state => state.chat.contact[key])
       .to(c => ({ ...c, name: 'Andrea' }));
     expect(newState3).toEqual(expected);
   });
