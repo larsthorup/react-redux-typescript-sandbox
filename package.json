@@ -15,8 +15,6 @@
     "@types/react-redux": "^7.1.7",
     "coveralls": "^3.0.9",
     "history": "^4.10.1",
-    "immer": "^7.0.5",
-    "immutable-assign": "^2.1.4",
     "path-to-regexp": "^6.1.0",
     "prettier": "^1.19.1",
     "query-string": "^6.10.1",
