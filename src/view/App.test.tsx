@@ -24,9 +24,9 @@ test('auth flow', async () => {
 
   // When: login
   const usernameInput = screen.getByPlaceholderText('User name');
-  const passwordInput = screen.getByPlaceholderText('Password');
+  const passwordInput = screen.getByPlaceholderText("Password (use 'p')");
   userEvent.type(usernameInput, 'Lars');
-  userEvent.type(passwordInput, 'whatever');
+  userEvent.type(passwordInput, 'p');
   userEvent.click(getLoginButton());
 
   // When: waiting for fetch

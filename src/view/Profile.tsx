@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from '../lib/react-redux-history';
+import { historyReplace } from '../lib/redux-history';
 
 import { useDispatch, useSelector } from '../store';
 import { signingOut } from '../saga/auth';
@@ -11,6 +12,7 @@ const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   const [isEditEnabled, setIsEditEnabled] = useState(false);
   const logoutHandler = () => {
     dispatch(signingOut());
+    dispatch(historyReplace({ pathname: '/' }));
   };
   const nameChangeHandler = useCallback(
     (name: string) => {
