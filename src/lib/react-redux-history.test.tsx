@@ -1,7 +1,12 @@
 import React, { ReactElement } from 'react';
 import * as Redux from 'redux';
 import * as ReactRedux from 'react-redux';
-import { fireEvent, render, wait, getNodeText } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  waitFor,
+  getNodeText,
+} from '@testing-library/react';
 
 import * as ReduxHistory from './redux-history';
 import * as ReactReduxHistory from './react-redux-history';
@@ -9,7 +14,7 @@ import * as ReactReduxHistory from './react-redux-history';
 test('react-redux-history', async () => {
   // given initial setup
   const rootReducer = Redux.combineReducers({
-    location: ReduxHistory.reducer
+    location: ReduxHistory.reducer,
   });
   type RootState = ReturnType<typeof rootReducer>;
   type Store = Redux.Store<RootState>;
@@ -28,7 +33,7 @@ test('react-redux-history', async () => {
   const RoutePath = {
     Home: '/',
     Profile: '/profile/:id',
-    Signin: '/signin'
+    Signin: '/signin',
   };
   const Home = () => {
     const navigate = ReactReduxHistory.useNavigate();
@@ -57,7 +62,7 @@ test('react-redux-history', async () => {
   const routes: ReactReduxHistory.Routes = {
     [RoutePath.Home]: <Home />,
     [RoutePath.Profile]: <Profile />,
-    [RoutePath.Signin]: <Signin />
+    [RoutePath.Signin]: <Signin />,
   };
   const App = () => {
     const routeResult = useRoutes(routes);
@@ -77,19 +82,19 @@ test('react-redux-history', async () => {
   fireEvent.click(getByText('Login'));
 
   // then Signin is rendered
-  await wait(() => getByText('Signin'));
+  await waitFor(() => getByText('Signin'));
 
   // when clicking browser back
-  ReduxHistory.history.goBack();
+  ReduxHistory.history.back();
 
   // then Home is rendered
-  await wait(() => getByText('Home'));
+  await waitFor(() => getByText('Home'));
 
   // when navigating with hash parameter
   fireEvent.click(getByText('Profile'));
 
   // then Profile is rendered with that parameter
-  await wait(() => getByText('Profile-%20-all'));
+  await waitFor(() => getByText('Profile-%20-all'));
 
   // when navigating to non-existing page
   ReduxHistory.history.push('/notyet');

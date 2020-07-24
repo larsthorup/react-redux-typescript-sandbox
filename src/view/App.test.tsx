@@ -1,4 +1,4 @@
-import { render, screen, wait } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { createRootElement } from '../root';
@@ -26,18 +26,18 @@ test('auth flow', async () => {
   const usernameInput = screen.getByPlaceholderText('User name');
   const passwordInput = screen.getByPlaceholderText("Password (use 'p')");
   userEvent.type(usernameInput, 'Lars');
-  userEvent.type(passwordInput, 'wrong');
+  userEvent.type(passwordInput, 'w');
   userEvent.click(getLoginButton());
 
   // Then: eventually see error message
   await screen.findByText('Error: Authorization failed');
 
   // When: login with correct password
-  userEvent.type(passwordInput, 'p');
+  userEvent.type(passwordInput, '{backspace}p');
   userEvent.click(getLoginButton());
 
   // When: waiting for fetch
-  await wait(getProfileButton);
+  await waitFor(getProfileButton);
 
   // Then: is on home page
   expect(getPeopleButton()).toBeInTheDocument();
@@ -62,7 +62,7 @@ test('auth flow', async () => {
   userEvent.click(getProfileButton());
 
   // When: waiting for lazy load
-  await wait(getLoggedInStatus);
+  await waitFor(getLoggedInStatus);
 
   // Then: is on profile page
   expect(getLoggedInStatus()).toBeInTheDocument();
