@@ -22,10 +22,17 @@ test('auth flow', async () => {
   // When: navigate to sign in
   userEvent.click(getSigninButton());
 
-  // When: login
+  // When: login with wrong password
   const usernameInput = screen.getByPlaceholderText('User name');
   const passwordInput = screen.getByPlaceholderText("Password (use 'p')");
   userEvent.type(usernameInput, 'Lars');
+  userEvent.type(passwordInput, 'wrong');
+  userEvent.click(getLoginButton());
+
+  // Then: eventually see error message
+  await screen.findByText('Error: Authorization failed');
+
+  // When: login with correct password
   userEvent.type(passwordInput, 'p');
   userEvent.click(getLoginButton());
 
