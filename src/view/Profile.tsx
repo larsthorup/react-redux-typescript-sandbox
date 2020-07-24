@@ -12,9 +12,12 @@ const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
   const logoutHandler = () => {
     dispatch(signingOut());
   };
-  const nameChangeHandler = useCallback((name: string) => {
-    dispatch(auth.actions.changeUserName({ name }));
-  }, []);
+  const nameChangeHandler = useCallback(
+    (name: string) => {
+      dispatch(auth.actions.changeUserName({ name }));
+    },
+    [dispatch]
+  );
   const editHandler = () => {
     setIsEditEnabled(true);
   };
