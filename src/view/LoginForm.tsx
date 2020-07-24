@@ -8,14 +8,23 @@ const LoginForm: React.FC = () => {
   const dispatch = useDispatch();
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const onPasswordChange: React.ChangeEventHandler<HTMLInputElement> = e =>
     setPassword(e.target.value);
   const onUsernameChange: React.ChangeEventHandler<HTMLInputElement> = e =>
     setUsername(e.target.value);
   const onSubmit: React.FormEventHandler = async e => {
     e.preventDefault();
-    await dispatch(signingIn({ password, username }));
-    dispatch(historyReplace({ pathname: '/' }));
+    setIsAuthorizing(true);
+    setErrorMessage('');
+    try {
+      await dispatch(signingIn({ password, username }));
+      dispatch(historyReplace({ pathname: '/' }));
+    } catch (err) {
+      setErrorMessage(err.message);
+      setIsAuthorizing(false);
+    }
   };
   return (
     <form className="LoginForm" onSubmit={onSubmit}>
@@ -34,7 +43,9 @@ const LoginForm: React.FC = () => {
         type="password"
       />
       <br />
-      <button type="submit">Login</button>
+      {!isAuthorizing && <button type="submit">Login</button>}
+      {errorMessage && <p>Error: {errorMessage}</p>}
+      {isAuthorizing && <p>Authorizing...</p>}
     </form>
   );
 };
