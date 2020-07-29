@@ -9,14 +9,15 @@ const LoginForm: React.FC = () => {
   const dispatch = useDispatch();
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const onPasswordChange: React.ChangeEventHandler<HTMLInputElement> = e =>
+  const onPasswordChange: React.ChangeEventHandler<HTMLInputElement> = (e) =>
     setPassword(e.target.value);
-  const onUsernameChange: React.ChangeEventHandler<HTMLInputElement> = e =>
+  const onUsernameChange: React.ChangeEventHandler<HTMLInputElement> = (e) =>
     setUsername(e.target.value);
-  const [signingInSaga, { error, isRunning: isAuthorizing }] = useSaga(
-    signingIn
-  );
-  const onSubmit: React.FormEventHandler = async e => {
+  const [
+    signingInSaga,
+    { error, isRunning: isAuthorizing },
+  ] = useSaga(signingIn, { throwOnError: true });
+  const onSubmit: React.FormEventHandler = async (e) => {
     e.preventDefault();
     try {
       await dispatch(signingInSaga({ password, username }));

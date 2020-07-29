@@ -4,6 +4,7 @@ import * as ReactRedux from 'react-redux';
 import * as ReduxHistory from '../lib/redux-history';
 import * as ReactReduxHistory from '../lib/react-redux-history';
 import * as ReactReduxTable from '../lib/react-redux-table';
+import * as ReduxSaga from '../lib/redux-saga';
 
 import auth from './auth';
 import person from './person';
@@ -12,19 +13,12 @@ import { locationReducer } from './location';
 export const rootReducer = Redux.combineReducers({
   auth: auth.reducer,
   person: person.reducer,
-  location: locationReducer
+  location: locationReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
 export type Selector<T> = (state: RootState) => T;
-export type Saga<T = void> = (
-  args: T
-) => ReduxThunk.ThunkAction<
-  Promise<void>,
-  RootState,
-  unknown,
-  Redux.Action<string>
->;
+export type Saga<TArg = void> = ReduxSaga.Saga<RootState, TArg, void>;
 export type Dispatch = ReduxThunk.ThunkDispatch<
   RootState,
   unknown,
