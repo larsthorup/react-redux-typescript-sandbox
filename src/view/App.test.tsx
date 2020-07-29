@@ -45,7 +45,7 @@ test('auth flow', async () => {
   // When: navigate to people page
   userEvent.click(getPeopleButton());
 
-  // Then: on people page
+  // Then: eventually on people page
   expect(await screen.findByText('Ronja')).toBeInTheDocument();
 
   // When: invoke "random" button
