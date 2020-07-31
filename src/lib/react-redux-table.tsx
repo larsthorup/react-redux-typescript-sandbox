@@ -38,6 +38,10 @@ export type TableColumn<TRow, TRowData = any> = {
     | CSSProperties
     | ((row: TRow, rowIndex: number, data: TRowData) => CSSProperties);
   /**
+   * The ReactNode to render in the specified (column) summary cell
+   */
+  cellSummary?: ReactNode | ((data: TRowData) => ReactNode);
+  /**
    * `true` if this column is to contain a button for the user to edit data in the row
    */
   editButton?: boolean;
@@ -106,6 +110,12 @@ export type TableRowOptions<TRow, TRowData = any> = {
    * editable row data in TRowData and only row ids in TRow.
    */
   useData?: (row: TRow, index: number) => TRowData;
+  /**
+   * React Hook to select data for the summary row which is passed to the cellSummary function.
+   * Must observe Hook principles, such as never calling other hooks conditionally or in loops
+   * Use this hook to avoid re-rendering the entire table when the user edits a single row.
+   */
+  useDataSummary?: () => TRowData;
 };
 
 type TableProps<TRow> = {
@@ -143,6 +153,7 @@ function Table<TRow>({
   caption,
 }: PropsWithChildren<TableProps<TRow>>) {
   const columnList = columns.filter((c) => !c.isExcluded);
+  const hasSummary = rowOptions && rowOptions.useDataSummary;
   return (
     <table>
       {caption && <caption>{caption}</caption>}
@@ -165,6 +176,9 @@ function Table<TRow>({
             />
           );
         })}
+        {hasSummary && (
+          <TableSummaryRow columns={columnList} rowOptions={rowOptions || {}} />
+        )}
       </tbody>
     </table>
   );
@@ -333,6 +347,57 @@ function TableRowView<TRow, TRowData>({
         })();
         return (
           <td style={{ textAlign, ...style }} key={columnIndex}>
+            {element}
+          </td>
+        );
+      })}
+    </>
+  );
+}
+
+type TableSummaryRowProps<TRow> = {
+  columns: TableColumn<TRow>[];
+  rowOptions: TableRowOptions<TRow>;
+};
+function TableSummaryRow<TRow>({
+  columns,
+  rowOptions,
+}: PropsWithChildren<TableSummaryRowProps<TRow>>) {
+  const useDataSummary = rowOptions.useDataSummary || (() => null);
+  const rowData = useDataSummary();
+  return (
+    <tr>
+      <TableSummaryRowView columns={columns} rowData={rowData} />
+    </tr>
+  );
+}
+
+type TableSummaryRowViewProps<TRow, TRowData> = {
+  columns: TableColumn<TRow, TRowData>[];
+  rowData: TRowData;
+};
+function TableSummaryRowView<TRow, TRowData>({
+  columns,
+  rowData,
+}: PropsWithChildren<TableSummaryRowViewProps<TRow, TRowData>>) {
+  return (
+    <>
+      {columns.map((column, columnIndex) => {
+        const { cellSummary, type = 'string' } = column;
+        const textAlign = type === 'number' ? 'right' : 'left';
+        const element = (
+          <>
+            {(() => {
+              if (typeof cellSummary === 'function') {
+                return cellSummary(rowData);
+              } else {
+                return cellSummary;
+              }
+            })()}
+          </>
+        );
+        return (
+          <td style={{ textAlign }} key={columnIndex}>
             {element}
           </td>
         );

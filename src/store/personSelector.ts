@@ -38,12 +38,16 @@ export const selectPeople: Selector<{
   }
 );
 
-export const selectAverageAge: Selector<number> = createSelector(
+export const selectPersonSummary: Selector<PersonInfo> = createSelector(
   selectPeople,
   (personSet) => {
     const idList = Object.keys(personSet);
-    return (
-      idList.reduce((sum, id) => sum + personSet[id].age, 0) / idList.length
-    );
+    return {
+      id: '',
+      name: '',
+      birthDate: '',
+      age:
+        idList.reduce((sum, id) => sum + personSet[id].age, 0) / idList.length,
+    };
   }
 );

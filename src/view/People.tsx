@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from '../store';
 import personSlice, { Person } from '../store/person';
 import {
   selectPeopleId,
-  selectAverageAge,
+  selectPersonSummary,
   selectPeople,
   PersonInfo,
 } from '../store/personSelector';
@@ -28,14 +28,15 @@ const PeopleTable: React.FC = () => {
     );
   });
   const rows = personIdList;
-  // const summaryRow = {
-  //   age: useSelector(selectPersonAgeAverage),
-  // };
   const rowOptions: TableRowOptions<typeof rows[0], PersonInfo> = {
     useData: (id) => useSelector((state) => selectPeople(state)[id]),
+    useDataSummary: () => useSelector(selectPersonSummary),
   };
   const columns: TableColumn<typeof rows[0], PersonInfo>[] = [
-    { title: '' }, // TODO: summaryCell: 'Average'
+    {
+      title: '',
+      cellSummary: () => 'Average',
+    },
     {
       title: 'Name',
       isSortable: true,
@@ -46,7 +47,7 @@ const PeopleTable: React.FC = () => {
       type: 'number',
       isSortable: true,
       cell: (id, i, person) => person.age,
-      // TODO: summarySelector: selectPersonAgeAverage,
+      cellSummary: (personSummary) => personSummary.age,
     },
     { title: '', cell: (id) => <UpdateButton id={id} /> },
   ];
