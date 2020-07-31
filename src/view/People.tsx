@@ -1,12 +1,13 @@
 import React from 'react';
-import { useSelector, useDispatch, TableColumn } from '../store';
-import personSlice from '../store/person';
+import { useSelector, useDispatch } from '../store';
+import personSlice, { Person } from '../store/person';
 import {
   selectPeopleId,
-  selectPeopleAge,
-  selectAverageAge as selectPersonAgeAverage,
+  selectAverageAge,
+  selectPeople,
+  PersonInfo,
 } from '../store/personSelector';
-import Table from '../lib/react-redux-table';
+import Table, { TableColumn, TableRowOptions } from '../lib/react-redux-table';
 import { historyBack } from '../lib/redux-history';
 import useAsyncEffect from '../lib/useAsyncEffect';
 import person from '../store/person';
@@ -27,25 +28,34 @@ const PeopleTable: React.FC = () => {
     );
   });
   const rows = personIdList;
-  const columns: TableColumn<typeof rows[0]>[] = [
-    { title: '', summaryCell: 'Average' },
+  // const summaryRow = {
+  //   age: useSelector(selectPersonAgeAverage),
+  // };
+  const rowOptions: TableRowOptions<typeof rows[0], PersonInfo> = {
+    useData: (id) => useSelector((state) => selectPeople(state)[id]),
+  };
+  const columns: TableColumn<typeof rows[0], PersonInfo>[] = [
+    { title: '' }, // TODO: summaryCell: 'Average'
     {
       title: 'Name',
-      selector: (id) => (state) => state.person[id].name,
-      sortable: true,
+      isSortable: true,
+      cell: (id, i, person) => person.name,
     },
     {
       title: 'Age',
-      selector: (id) => (state) => selectPeopleAge(state)[id],
-      sortable: true,
-      summarySelector: selectPersonAgeAverage,
+      type: 'number',
+      isSortable: true,
+      cell: (id, i, person) => person.age,
+      // TODO: summarySelector: selectPersonAgeAverage,
     },
     { title: '', cell: (id) => <UpdateButton id={id} /> },
   ];
   return (
     <>
       {isRunning && <p>Loading...</p>}
-      {isCompleted && <Table columns={columns} rows={rows} />}
+      {isCompleted && (
+        <Table columns={columns} rows={rows} rowOptions={rowOptions} />
+      )}
       <button onClick={() => dispatch(historyBack())}>Back</button>
     </>
   );

@@ -1,183 +1,344 @@
-import * as R from 'ramda';
-import React, { PropsWithChildren, useState } from 'react';
-import { useSelector } from 'react-redux';
-import cacheResultOf from './cacheResultOf';
+import * as assert from 'assert';
 
-export type TableColumn<TState, TRow> = {
+import React, {
+  CSSProperties,
+  PropsWithChildren,
+  ReactElement,
+  ReactNode,
+  useState,
+} from 'react';
+
+export type TableSortDirection = 'asc' | 'desc';
+
+const reverse = (direction: TableSortDirection) => {
+  return direction === 'asc' ? 'desc' : 'asc';
+};
+
+export type TableSortOrder = {
+  columnName: string;
+  direction: TableSortDirection;
+};
+
+/**
+ * The type of each item of the `columns` prop on the `Table` component
+ * You should usually type the collection like this:
+ * `const columns: TableColumn<typeof rows[0], RowData>[] = [...]`
+ */
+export type TableColumn<TRow, TRowData = any> = {
+  /**
+   * The ReactNode to render in the specified (column, rowIndex) cell
+   */
   cell?:
-    | number
-    | string
-    | React.ReactElement
-    | ((row: TRow) => number | string | React.ReactElement);
-  selector?: (row: TRow) => (state: TState) => number | string;
-  sortable?: boolean;
-  summaryCell?:
-    | number
-    | string
-    | React.ReactElement
-    | (() => number | string | React.ReactElement);
-  summarySelector?: (state: TState) => number | string;
+    | ReactNode
+    | ((row: TRow, rowIndex: number, data: TRowData) => ReactNode);
+  /**
+   * The CSSProperties to add to the `<td>` of the specified (column, rowIndex) cell
+   */
+  cellStyle?:
+    | CSSProperties
+    | ((row: TRow, rowIndex: number, data: TRowData) => CSSProperties);
+  /**
+   * `true` if this column is to contain a button for the user to edit data in the row
+   */
+  editButton?: boolean;
+  /**
+   * `true` if this column should be excluded, e.g. based on a feature toggle
+   */
+  isExcluded?: boolean;
+  /**
+   * `true` if this column enables the user to sort the rows based on the column
+   */
+  isSortable?: boolean;
+  /**
+   * A unique name used to identify the column when sorting
+   */
+  name?: string;
+  /**
+   * The text to use as column header
+   */
   title: string;
+  /**
+   * `number` to right-align cell content
+   */
+  type?: 'string' | 'number';
 };
 
-type TableProps<TState, TRow> = {
-  columns: TableColumn<TState, TRow>[];
-  rows: TRow[];
+/**
+ * The type of the `rowOptions` prop on the `Table` component
+ * You should usually type this object like this:
+ * `const rowOptions: TableRowOptions<typeof rows[0], RowData>[] = [...]`
+ */
+export type TableRowOptions<TRow, TRowData = any> = {
+  /**
+   * The ReactNode to render across the width of the table to enable the user to edit the data
+   * of the specified row. Invoke `onClose` to close the editor
+   */
+  editor?: (
+    onClose: () => void,
+    row: TRow,
+    index: number,
+    data: TRowData
+  ) => ReactElement;
+  /**
+   * `true`, if the user should be able to edit the specified row
+   */
+  isEditable?: (row: TRow, index: number, data: TRowData) => boolean;
+  /**
+   * `true` if this row should be excluded
+   */
+  isExcluded?: (row: TRow, index: number, data: TRowData) => boolean;
+  /**
+   * The name to use when labeling the current row, used on the edit button
+   */
+  label?: (row: TRow, index: number, data: TRowData) => string;
+  /**
+   * Props to add to the `<tr>` of the specified row
+   */
+  props?: (row: TRow, index: number, data: TRowData) => { [name: string]: any };
+  /**
+   * The CSSProperties to add to the `<tr>` of the specified row
+   */
+  style?: (row: TRow, index: number, rowData: TRowData) => CSSProperties;
+  /**
+   * React Hook to select data for the current row which is passed along in most functions here.
+   * Must observe Hook principles, such as never calling other hooks conditionally or in loops
+   * Use this hook to avoid re-rendering the entire table when the user edits a single row, by keeping
+   * editable row data in TRowData and only row ids in TRow.
+   */
+  useData?: (row: TRow, index: number) => TRowData;
 };
-function Table<TState, TRow>({
+
+type TableProps<TRow> = {
+  /**
+   * How to render each column of the table
+   */
+  columns: TableColumn<TRow>[];
+  /**
+   * Invoked when the user requests a different sort order
+   */
+  onSortOrderChange?: (sortOrder: TableSortOrder) => void;
+  /**
+   * How to render each row of the table
+   */
+  rowOptions?: TableRowOptions<TRow>;
+  /**
+   * Data for each row of the table
+   */
+  rows: TRow[];
+  /**
+   * The current sort order, if sorting is enabled for any columns
+   */
+  sortOrder?: TableSortOrder;
+  /**
+   * Not used yet
+   */
+  caption?: string;
+};
+function Table<TRow>({
   columns,
-  rows
-}: PropsWithChildren<TableProps<TState, TRow>>) {
-  const [isSorted, setIsSorted] = useState(false);
-  const [sortColumnIndex, setSortColumnIndex] = useState(0);
+  onSortOrderChange,
+  rowOptions,
+  rows,
+  sortOrder,
+  caption,
+}: PropsWithChildren<TableProps<TRow>>) {
+  const columnList = columns.filter((c) => !c.isExcluded);
   return (
     <table>
+      {caption && <caption>{caption}</caption>}
       <thead>
-        <tr>
-          {columns.map(({ sortable, title }, columnIndex) => {
-            const sortEnableHandler = () => {
-              setIsSorted(true);
-              setSortColumnIndex(columnIndex);
-            };
-            return (
-              <td style={{ fontWeight: 'bold' }} key={columnIndex}>
-                {title}
-                {sortable && <button onClick={sortEnableHandler}>sort</button>}
-              </td>
-            );
-          })}
-        </tr>
+        <TableHeaderRow
+          columns={columnList}
+          onSortOrderChange={onSortOrderChange}
+          sortOrder={sortOrder}
+        />
       </thead>
-      <TableBody
-        columns={columns}
-        rows={rows}
-        isSorted={isSorted}
-        sortColumnIndex={sortColumnIndex}
-      />
+      <tbody>
+        {rows.map((row, rowIndex) => {
+          return (
+            <TableRow
+              columns={columnList}
+              rowOptions={rowOptions || {}}
+              row={row}
+              rowIndex={rowIndex}
+              key={rowIndex}
+            />
+          );
+        })}
+      </tbody>
     </table>
   );
 }
 
-type TableBodyProps<TState, TRow> = {
-  columns: TableColumn<TState, TRow>[];
-  rows: TRow[];
-  isSorted: boolean;
-  sortColumnIndex: number;
+type TableHeaderRowProps<TRow> = {
+  columns: TableColumn<TRow>[];
+  onSortOrderChange?: (sortOrder: TableSortOrder) => void;
+  sortOrder?: TableSortOrder;
 };
-function TableBody<TState, TRow>({
+function TableHeaderRow<TRow>({
   columns,
-  rows,
-  isSorted,
-  sortColumnIndex
-}: PropsWithChildren<TableBodyProps<TState, TRow>>) {
-  const rowList = useSelector(
-    cacheResultOf((state: TState) => {
-      // console.log('rowList'); // TODO: avoid recalculate on every state change!!
-      const isRowIncluded = (r: TRow) => true;
-      const filteredRows = rows.filter(isRowIncluded);
-      const sortValue = (row: TRow) =>
-        columns[sortColumnIndex].selector!(row)(state);
-      const sortedRows = isSorted
-        ? R.sortBy(sortValue, filteredRows)
-        : filteredRows;
-      const rowCount = 100;
-      const rowSubset = sortedRows.slice(0, rowCount);
-      return rowSubset;
-    })
-  );
-  return (
-    <tbody>
-      {rowList.map((row, key) => {
-        return <TableRow row={row} columns={columns} key={key} />;
-      })}
-      <TableSummaryRow columns={columns} />
-    </tbody>
-  );
-}
-
-type TableRowProps<TState, TRow> = {
-  columns: TableColumn<TState, TRow>[];
-  row: TRow;
-};
-function TableRow<TState, TRow>({
-  columns,
-  row
-}: PropsWithChildren<TableRowProps<TState, TRow>>) {
-  // TODO: eventually support row-level selector for shared computations
+  onSortOrderChange,
+  sortOrder,
+}: PropsWithChildren<TableHeaderRowProps<TRow>>) {
+  const fontWeight = 'bold';
   return (
     <tr>
-      {columns.map((column, columnIndex) => {
-        return <TableCell row={row} column={column} key={columnIndex} />;
+      {columns.map(({ name, isSortable, title, type = 'string' }, key) => {
+        const textAlign = type === 'number' ? 'right' : 'left';
+        const columnControl = (() => {
+          if (sortOrder && onSortOrderChange && isSortable && name) {
+            const { columnName, direction } = sortOrder;
+            const isSortedByThisColumn = columnName === name;
+            const newDirection = isSortedByThisColumn
+              ? reverse(direction)
+              : 'asc';
+            const sortOrderChangeHandler = () =>
+              onSortOrderChange({
+                columnName: name,
+                direction: newDirection,
+              });
+            const sortText = isSortedByThisColumn
+              ? `sorted ${direction}`
+              : 'sort';
+            return (
+              <>
+                {title}
+                <button onClick={sortOrderChangeHandler}>{sortText}</button>
+              </>
+            );
+          } else {
+            return <>{title}</>;
+          }
+        })();
+        return (
+          <td style={{ fontWeight, textAlign }} key={key}>
+            {columnControl}
+          </td>
+        );
       })}
     </tr>
   );
 }
 
-type TableCellProps<TState, TRow> = {
-  column: TableColumn<TState, TRow>;
+type TableRowProps<TRow> = {
+  columns: TableColumn<TRow>[];
+  rowOptions: TableRowOptions<TRow>;
   row: TRow;
+  rowIndex: number;
 };
-function TableCell<TState, TRow>({
-  column: { cell, selector },
-  row
-}: PropsWithChildren<TableCellProps<TState, TRow>>) {
-  const value = useSelector(selector ? selector(row) : () => undefined);
-  const element = (() => {
-    switch (typeof cell) {
-      case 'undefined':
-        return <span>{value}</span>;
-      case 'number':
-      case 'string':
-        return <>{cell}</>;
-      case 'function':
-        return <>{cell(row)}</>;
-    }
-  })();
-  return <td>{element}</td>;
+function TableRow<TRow>({
+  columns,
+  rowOptions,
+  row,
+  rowIndex,
+}: PropsWithChildren<TableRowProps<TRow>>) {
+  const useData = rowOptions.useData || (() => null);
+  const rowData = useData(row, rowIndex);
+  const [isEditing, setIsEditing] = useState(false);
+  const isExcluded =
+    rowOptions.isExcluded && rowOptions.isExcluded(row, rowIndex, rowData);
+  const editHandler = () => {
+    setIsEditing(true);
+  };
+  const closeHandler = () => {
+    setIsEditing(false);
+  };
+  if (isExcluded) {
+    return <tr style={{ display: 'none' }} />;
+  } else if (isEditing) {
+    if (!rowOptions.editor) assert.fail();
+    const editor = rowOptions.editor(closeHandler, row, rowIndex, rowData);
+    const style = { backgroundColor: 'yellow' };
+    return (
+      <tr>
+        <td colSpan={columns.length} style={style}>
+          {editor}
+        </td>
+      </tr>
+    );
+  } else {
+    const isEditable = rowOptions.isEditable
+      ? rowOptions.isEditable(row, rowIndex, rowData)
+      : true;
+    const rowProps = rowOptions.props
+      ? rowOptions.props(row, rowIndex, rowData)
+      : {};
+    const style = rowOptions.style
+      ? rowOptions.style(row, rowIndex, rowData)
+      : {};
+    return (
+      <tr style={style} {...rowProps}>
+        <TableRowView
+          row={row}
+          rowData={rowData}
+          rowIndex={rowIndex}
+          isEditable={isEditable}
+          columns={columns}
+          rowOptions={rowOptions}
+          onEdit={editHandler}
+        />
+      </tr>
+    );
+  }
 }
 
-type TableSummaryRowProps<TState, TRow> = {
-  columns: TableColumn<TState, TRow>[];
+type TableRowViewProps<TRow, TRowData> = {
+  columns: TableColumn<TRow, TRowData>[];
+  isEditable: boolean;
+  onEdit: () => void;
+  rowOptions: TableRowOptions<TRow, TRowData>;
+  row: TRow;
+  rowData: TRowData;
+  rowIndex: number;
 };
-function TableSummaryRow<TState, TRow>({
-  columns
-}: PropsWithChildren<TableSummaryRowProps<TState, TRow>>) {
-  // TODO: eventually support row-level selector for shared computations
-  const hasSummary = columns.reduce(
-    (any, column) => !!(any || column.summaryCell || column.summarySelector),
-    false
-  );
-  if (!hasSummary) return null;
+function TableRowView<TRow, TRowData>({
+  columns,
+  isEditable,
+  onEdit,
+  rowOptions,
+  row,
+  rowData,
+  rowIndex,
+}: PropsWithChildren<TableRowViewProps<TRow, TRowData>>) {
   return (
-    <tr>
+    <>
       {columns.map((column, columnIndex) => {
-        return <TableSummaryCell column={column} key={columnIndex} />;
+        const { cell, cellStyle, editButton, type = 'string' } = column;
+        const textAlign = type === 'number' ? 'right' : 'left';
+        const element = (
+          <>
+            {(() => {
+              if (isEditable && editButton) {
+                const label = rowOptions.label
+                  ? rowOptions.label(row, rowIndex, rowData)
+                  : `row ${columnIndex}`;
+                return <button onClick={onEdit}>edit</button>;
+              } else if (typeof cell === 'function') {
+                return cell(row, rowIndex, rowData);
+              } else {
+                return cell;
+              }
+            })()}
+          </>
+        );
+        const style = (() => {
+          switch (typeof cellStyle) {
+            case 'undefined':
+              return undefined;
+            case 'object':
+              return cellStyle;
+            case 'function':
+              return cellStyle(row, rowIndex, rowData);
+          }
+        })();
+        return (
+          <td style={{ textAlign, ...style }} key={columnIndex}>
+            {element}
+          </td>
+        );
       })}
-    </tr>
+    </>
   );
-}
-
-type TableSummaryCellProps<TState, TRow> = {
-  column: TableColumn<TState, TRow>;
-};
-function TableSummaryCell<TState, TRow>({
-  column: { summaryCell, summarySelector }
-}: PropsWithChildren<TableSummaryCellProps<TState, TRow>>) {
-  const value = useSelector(
-    summarySelector ? summarySelector : () => undefined
-  );
-  const element = (() => {
-    switch (typeof summaryCell) {
-      case 'undefined':
-        return <span>{value}</span>;
-      case 'number':
-      case 'string':
-        return <>{summaryCell}</>;
-      case 'function':
-        return <>{summaryCell()}</>;
-    }
-  })();
-  return <td>{element}</td>;
 }
 
 export default Table;

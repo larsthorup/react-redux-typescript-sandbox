@@ -2,12 +2,14 @@ import { createSelector } from 'reselect';
 import { createObjectSelector } from 'reselect-map';
 import cacheResultOf from '../lib/cacheResultOf';
 import { Selector } from '.';
+import { Person } from './person';
 
 export const selectPeopleId = cacheResultOf(
   createSelector(
-    state => state.person,
-    person => {
-      return Object.values(person).map(p => p.id);
+    (state) => state.person,
+    (personSet) => {
+      // console.log('selectPeopleId');
+      return Object.values(personSet).map((p) => p.id);
     }
   ) as Selector<string[]>
 );
@@ -19,17 +21,29 @@ const ageOf = (date: string) => {
   );
 };
 
-export const selectPeopleAge: Selector<{
-  [id: string]: number;
+export type PersonInfo = Person & {
+  age: number;
+};
+
+export const selectPeople: Selector<{
+  [id: string]: PersonInfo;
 }> = createObjectSelector(
-  state => state.person,
-  ({ birthDate }) => ageOf(birthDate)
+  (state) => state.person,
+  (person) => {
+    // console.log('selectPeople', person);
+    return {
+      ...person,
+      age: ageOf(person.birthDate),
+    };
+  }
 );
 
 export const selectAverageAge: Selector<number> = createSelector(
-  selectPeopleAge,
-  age => {
-    const idList = Object.keys(age);
-    return idList.reduce((sum, id) => sum + age[id], 0) / idList.length;
+  selectPeople,
+  (personSet) => {
+    const idList = Object.keys(personSet);
+    return (
+      idList.reduce((sum, id) => sum + personSet[id].age, 0) / idList.length
+    );
   }
 );
