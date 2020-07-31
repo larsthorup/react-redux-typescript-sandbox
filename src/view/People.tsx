@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from '../store';
 import personSlice, { Person } from '../store/person';
 import {
@@ -7,17 +7,27 @@ import {
   selectPeople,
   PersonInfo,
 } from '../store/personSelector';
-import Table, { TableColumn, TableRowOptions } from '../lib/react-redux-table';
+import Table, {
+  TableColumn,
+  TableRowOptions,
+  TableSortOrder,
+} from '../lib/react-redux-table';
 import { historyBack } from '../lib/redux-history';
 import useAsyncEffect from '../lib/useAsyncEffect';
 import person from '../store/person';
 
 const PeopleTable: React.FC = () => {
   const dispatch = useDispatch();
-  const personIdList = useSelector(selectPeopleId);
+  const [sortOrder, setSortOrder] = useState({
+    columnName: 'name',
+    direction: 'asc',
+  } as TableSortOrder);
+  const personIdList = useSelector((state) =>
+    selectPeopleId(state, { sortOrder })
+  );
   const { isRunning, isCompleted } = useAsyncEffect(async () => {
     // Note: simulate server request
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     dispatch(
       person.actions.addPeople({
         '1': { id: '1', name: 'Adam', birthDate: '2012' },
@@ -38,11 +48,13 @@ const PeopleTable: React.FC = () => {
       cellSummary: () => 'Average',
     },
     {
+      name: 'name',
       title: 'Name',
       isSortable: true,
       cell: (id, i, person) => person.name,
     },
     {
+      name: 'age',
       title: 'Age',
       type: 'number',
       isSortable: true,
@@ -55,7 +67,13 @@ const PeopleTable: React.FC = () => {
     <>
       {isRunning && <p>Loading...</p>}
       {isCompleted && (
-        <Table columns={columns} rows={rows} rowOptions={rowOptions} />
+        <Table
+          columns={columns}
+          rows={rows}
+          rowOptions={rowOptions}
+          sortOrder={sortOrder}
+          onSortOrderChange={setSortOrder}
+        />
       )}
       <button onClick={() => dispatch(historyBack())}>Back</button>
     </>

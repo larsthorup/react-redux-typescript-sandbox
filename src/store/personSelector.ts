@@ -1,18 +1,30 @@
+import * as R from 'ramda';
 import { createSelector } from 'reselect';
 import { createObjectSelector } from 'reselect-map';
 import cacheResultOf from '../lib/cacheResultOf';
-import { Selector } from '.';
+import { Selector, RootState } from '.';
 import { Person } from './person';
+import { TableSortOrder } from '../lib/react-redux-table';
 
-export const selectPeopleId = cacheResultOf(
-  createSelector(
-    (state) => state.person,
-    (personSet) => {
-      // console.log('selectPeopleId');
-      return Object.values(personSet).map((p) => p.id);
-    }
-  ) as Selector<string[]>
+const selectPeopleIdUncached = createSelector(
+  (state: RootState) => state.person,
+  (_: RootState, { sortOrder }: { sortOrder: TableSortOrder }) => sortOrder,
+  (personSet, sortOrder) => {
+    // console.log('selectPeopleId');
+    const personListUnsorted = Object.values(personSet);
+    const personListSorted = R.sortBy(
+      (p) => (sortOrder.columnName === 'name' ? p.name : p.birthDate),
+      personListUnsorted
+    );
+    const personList =
+      sortOrder.direction === 'asc'
+        ? personListSorted
+        : personListSorted.reverse();
+    return personList.map((p) => p.id);
+  }
 );
+// TODO as Selector<string[]>
+export const selectPeopleId = cacheResultOf(selectPeopleIdUncached);
 
 const ageOf = (date: string) => {
   // console.log(date);
