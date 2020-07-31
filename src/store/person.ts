@@ -32,11 +32,25 @@ const updateBirthDate: PersonReducer<{ id: string; birthDate: string }> = (
   };
 };
 
+const updateName: PersonReducer<{ id: string; name: string }> = (
+  state,
+  { id, name }
+) => {
+  return {
+    ...state,
+    [id]: {
+      ...state[id],
+      name,
+    },
+  };
+};
+
 export default createSlice({
   name: 'person',
   initialState,
   reducers: {
     addPeople,
     updateBirthDate,
+    updateName,
   },
 });

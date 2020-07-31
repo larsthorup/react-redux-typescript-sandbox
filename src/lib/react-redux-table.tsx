@@ -326,7 +326,7 @@ function TableRowView<TRow, TRowData>({
                 const label = rowOptions.label
                   ? rowOptions.label(row, rowIndex, rowData)
                   : `row ${columnIndex}`;
-                return <button onClick={onEdit}>edit</button>;
+                return <button onClick={onEdit}>Edit</button>;
               } else if (typeof cell === 'function') {
                 return cell(row, rowIndex, rowData);
               } else {

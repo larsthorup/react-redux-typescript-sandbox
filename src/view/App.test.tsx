@@ -48,8 +48,21 @@ test('auth flow', async () => {
   // Then: eventually on people page
   expect(await screen.findByText('Ronja')).toBeInTheDocument();
 
-  // When: invoke "random" button
-  userEvent.click(screen.getAllByText('random')[0]);
+  // When: click first edit button
+  userEvent.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+
+  // Then: see edit form
+  await screen.findAllByRole('button', { name: 'Save' });
+
+  // When: change name and click save
+  userEvent.type(screen.getAllByRole('textbox')[0], 'X');
+  userEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+
+  // When: click close
+  userEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+  // Then: see updated name
+  expect(await screen.findByText('AdamX')).toBeInTheDocument();
 
   // When: navigate back
   userEvent.click(screen.getByText('Back'));

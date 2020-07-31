@@ -15,6 +15,7 @@ import Table, {
 import { historyBack } from '../lib/redux-history';
 import useAsyncEffect from '../lib/useAsyncEffect';
 import person from '../store/person';
+import TextField from './TextField';
 
 const PeopleTable: React.FC = () => {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ const PeopleTable: React.FC = () => {
   });
   const rows = personIdList;
   const rowOptions: TableRowOptions<typeof rows[0], PersonInfo> = {
+    editor: (onClose, id) => <PersonEditForm id={id} onClose={onClose} />,
     useData: (id) => useSelector((state) => selectPeople(state)[id]),
     useDataSummary: () => useSelector(selectPersonSummary),
   };
@@ -61,7 +63,7 @@ const PeopleTable: React.FC = () => {
       cell: (id, i, person) => person.age,
       cellSummary: (personSummary) => personSummary.age,
     },
-    { title: '', cell: (id) => <UpdateButton id={id} /> },
+    { title: '', editButton: true },
   ];
   return (
     <>
@@ -80,13 +82,25 @@ const PeopleTable: React.FC = () => {
   );
 };
 
-const UpdateButton: React.FC<{ id: string }> = ({ id }) => {
+const PersonEditForm: React.FC<{ id: string; onClose: () => void }> = ({
+  id,
+  onClose,
+}) => {
   const dispatch = useDispatch();
-  const updateBirthDate = () => {
-    const birthDate = Math.trunc(Math.random() * 100 + 1920).toString();
+  const person = useSelector((state) => state.person[id]);
+  const birthDateChangeHandler = (birthDate: string) => {
     dispatch(personSlice.actions.updateBirthDate({ id, birthDate }));
   };
-  return <button onClick={updateBirthDate}>random</button>;
+  const nameChangeHandler = (name: string) => {
+    dispatch(personSlice.actions.updateName({ id, name }));
+  };
+  return (
+    <>
+      <TextField value={person.name} onChange={nameChangeHandler} />
+      <TextField value={person.birthDate} onChange={birthDateChangeHandler} />
+      <button onClick={onClose}>Close</button>
+    </>
+  );
 };
 
 export default PeopleTable;
