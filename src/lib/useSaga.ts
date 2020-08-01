@@ -4,41 +4,51 @@ import { Saga } from './redux-saga';
 
 // Note: based loosely on https://react-query.tanstack.com/docs/api#usemutation
 
+type SagaState<TResult> = {
+  data: TResult | undefined;
+  error: Error | null;
+  isRunning: boolean;
+  isCompleted: boolean;
+};
+
 const useSaga = <TState, TArg, TResult>(
   saga: Saga<TState, TArg, TResult>,
   options?: { throwOnError?: boolean }
-): [
-  Saga<TState, TArg, TResult | undefined>,
-  {
-    data: TResult | undefined;
-    error: Error | null;
-    isRunning: boolean;
-    isCompleted: boolean;
-  }
-] => {
-  const [data, setData] = useState(undefined as TResult | undefined);
-  const [error, setError] = useState(null as Error | null);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+): [Saga<TState, TArg, TResult | undefined>, SagaState<TResult>] => {
+  const [state, setState] = useState({
+    data: undefined,
+    error: null,
+    isRunning: false,
+    isCompleted: false,
+  } as SagaState<TResult>);
   const instrumentedSaga: Saga<TState, TArg, TResult | undefined> = (
     arg: TArg
   ) => async (dispatch, getState, extra) => {
-    setIsRunning(true);
-    setIsCompleted(false);
+    setState({
+      ...state,
+      isRunning: true,
+      isCompleted: false,
+      error: null,
+    });
     try {
-      setError(null);
       const data = await saga(arg)(dispatch, getState, extra);
-      setData(data);
-      setIsCompleted(true);
+      setState({
+        ...state,
+        data,
+        isRunning: false,
+        isCompleted: true,
+      });
       return data;
-    } catch (err) {
-      setError(err);
-      if (options?.throwOnError) throw err;
-    } finally {
-      setIsRunning(false);
+    } catch (error) {
+      setState({
+        ...state,
+        error,
+        isRunning: false,
+      });
+      if (options?.throwOnError) throw error;
     }
   };
-  return [instrumentedSaga, { data, error, isRunning, isCompleted }];
+  return [instrumentedSaga, state];
 };
 
 export default useSaga;

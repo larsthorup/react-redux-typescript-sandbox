@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { createRootElement } from '../root';
-import App from './App';
+import { getRowRenderCount, resetRowRenderCount } from '../lib/react-table';
 
 test('auth flow', async () => {
   const getLoggedOutStatus = () => screen.getByText('Please');
@@ -48,21 +48,28 @@ test('auth flow', async () => {
   // Then: eventually on people page
   expect(await screen.findByText('Ronja')).toBeInTheDocument();
 
+  // Then: each row rendered only once
+  expect(getRowRenderCount()).toEqual(4);
+  resetRowRenderCount();
+
   // When: click first edit button
-  userEvent.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+  userEvent.click(screen.getByRole('button', { name: 'Edit Adam' }));
 
   // Then: see edit form
-  await screen.findAllByRole('button', { name: 'Save' });
+  await screen.findAllByRole('button', { name: 'Save name' });
 
   // When: change name and click save
-  userEvent.type(screen.getAllByRole('textbox')[0], 'X');
-  userEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+  userEvent.type(screen.getByPlaceholderText('name'), 'X');
+  userEvent.click(screen.getByRole('button', { name: 'Save name' }));
 
   // When: click close
-  userEvent.click(screen.getByRole('button', { name: 'Close' }));
+  userEvent.click(screen.getByRole('button', { name: 'Close AdamX' }));
 
   // Then: see updated name
   expect(await screen.findByText('AdamX')).toBeInTheDocument();
+
+  // Then: only that row was re-rendered
+  expect(getRowRenderCount()).toEqual(1);
 
   // When: navigate back
   userEvent.click(screen.getByText('Back'));

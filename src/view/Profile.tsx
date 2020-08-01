@@ -37,7 +37,11 @@ const LoggedIn: React.FC<{ user: User }> = ({ user }) => {
         )}
         {isEditEnabled && (
           <>
-            <TextField value={user.name} onChange={nameChangeHandler} />
+            <TextField
+              label="user name"
+              value={user.name}
+              onChange={nameChangeHandler}
+            />
             <button onClick={cancelHandler}>Cancel</button>
           </>
         )}
@@ -55,7 +59,7 @@ const NotLoggedIn: React.FC = () => {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const user = useSelector(state => state.auth.user);
+  const user = useSelector((state) => state.auth.user);
   const profile = user ? <LoggedIn user={user} /> : <NotLoggedIn />;
   return (
     <div className="Profile">

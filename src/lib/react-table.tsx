@@ -280,6 +280,7 @@ function TableRow<TRow>({
     const style = rowOptions.style
       ? rowOptions.style(row, rowIndex, rowData)
       : {};
+    ++rowRenderCount;
     return (
       <tr style={style} {...rowProps}>
         <TableRowView
@@ -325,8 +326,8 @@ function TableRowView<TRow, TRowData>({
               if (isEditable && editButton) {
                 const label = rowOptions.label
                   ? rowOptions.label(row, rowIndex, rowData)
-                  : `row ${columnIndex}`;
-                return <button onClick={onEdit}>Edit</button>;
+                  : `row ${rowIndex + 1}`;
+                return <button onClick={onEdit}>{`Edit ${label}`}</button>;
               } else if (typeof cell === 'function') {
                 return cell(row, rowIndex, rowData);
               } else {
@@ -407,3 +408,8 @@ function TableSummaryRowView<TRow, TRowData>({
 }
 
 export default Table;
+
+// Note: instrumentation for testing purposes
+let rowRenderCount = 0;
+export const getRowRenderCount = () => rowRenderCount;
+export const resetRowRenderCount = () => (rowRenderCount = 0);

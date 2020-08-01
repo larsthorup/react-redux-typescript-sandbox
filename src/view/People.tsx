@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from '../store';
-import personSlice, { Person } from '../store/person';
+import personSlice from '../store/person';
 import {
   selectPeopleId,
   selectPersonSummary,
@@ -41,6 +41,7 @@ const PeopleTable: React.FC = () => {
   const rows = personIdList;
   const rowOptions: TableRowOptions<typeof rows[0], PersonInfo> = {
     editor: (onClose, id) => <PersonEditForm id={id} onClose={onClose} />,
+    label: (id, i, person) => person.name,
     useData: (id) => useSelector((state) => selectPeople(state)[id]),
     useDataSummary: () => useSelector(selectPersonSummary),
   };
@@ -96,9 +97,17 @@ const PersonEditForm: React.FC<{ id: string; onClose: () => void }> = ({
   };
   return (
     <>
-      <TextField value={person.name} onChange={nameChangeHandler} />
-      <TextField value={person.birthDate} onChange={birthDateChangeHandler} />
-      <button onClick={onClose}>Close</button>
+      <TextField
+        label="name"
+        value={person.name}
+        onChange={nameChangeHandler}
+      />
+      <TextField
+        label="date of birth"
+        value={person.birthDate}
+        onChange={birthDateChangeHandler}
+      />
+      <button onClick={onClose}>{`Close ${person.name}`}</button>
     </>
   );
 };
