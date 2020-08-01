@@ -11,7 +11,7 @@ import Table, {
   TableColumn,
   TableRowOptions,
   TableSortOrder,
-} from '../lib/react-redux-table';
+} from '../lib/react-table';
 import { historyBack } from '../lib/redux-history';
 import useAsyncEffect from '../lib/useAsyncEffect';
 import person from '../store/person';

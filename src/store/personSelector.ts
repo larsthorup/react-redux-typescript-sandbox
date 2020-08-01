@@ -4,7 +4,7 @@ import { createObjectSelector } from 'reselect-map';
 import cacheResultOf from '../lib/cacheResultOf';
 import { Selector, RootState } from '.';
 import { Person } from './person';
-import { TableSortOrder } from '../lib/react-redux-table';
+import { TableSortOrder } from '../lib/react-table';
 
 const selectPeopleIdUncached = createSelector(
   (state: RootState) => state.person,
