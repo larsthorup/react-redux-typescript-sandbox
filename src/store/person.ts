@@ -4,6 +4,7 @@ export type Person = {
   id: string;
   name: string;
   birthDate: string;
+  selected?: boolean;
 };
 
 export type PersonState = Readonly<{ [id: string]: Person }>;
@@ -16,6 +17,19 @@ const addPeople: PersonReducer<{ [id: string]: Person }> = (state, people) => {
   return {
     ...state,
     ...people,
+  };
+};
+
+const selectPerson: PersonReducer<{ id: string; selected: boolean }> = (
+  state,
+  { id, selected }
+) => {
+  return {
+    ...state,
+    [id]: {
+      ...state[id],
+      selected,
+    },
   };
 };
 
@@ -50,6 +64,7 @@ export default createSlice({
   initialState,
   reducers: {
     addPeople,
+    selectPerson,
     updateBirthDate,
     updateName,
   },

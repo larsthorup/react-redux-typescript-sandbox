@@ -42,12 +42,16 @@ const PeopleTable: React.FC = () => {
   const rowOptions: TableRowOptions<typeof rows[0], PersonInfo> = {
     editor: (onClose, id) => <PersonEditForm id={id} onClose={onClose} />,
     label: (id, i, person) => person.name,
+    onSelected: (id, selected) =>
+      dispatch(person.actions.selectPerson({ id, selected })),
     useData: (id) => useSelector((state) => selectPeople(state)[id]),
     useDataSummary: () => useSelector(selectPersonSummary),
+    useSelected: (id) =>
+      useSelector((state) => !!selectPeople(state)[id].selected),
   };
   const columns: TableColumn<typeof rows[0], PersonInfo>[] = [
     {
-      title: '',
+      isSelectColumn: true,
       cellSummary: () => 'Average',
     },
     {
@@ -64,7 +68,7 @@ const PeopleTable: React.FC = () => {
       cell: (id, i, person) => person.age,
       cellSummary: (personSummary) => personSummary.age,
     },
-    { title: '', editButton: true },
+    { isEditColumn: true },
   ];
   return (
     <>

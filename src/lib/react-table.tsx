@@ -5,7 +5,10 @@ import React, {
   PropsWithChildren,
   ReactElement,
   ReactNode,
+  useRef,
   useState,
+  ChangeEventHandler,
+  useEffect,
 } from 'react';
 
 export type TableSortDirection = 'asc' | 'desc';
@@ -44,7 +47,11 @@ export type TableColumn<TRow, TRowData = any> = {
   /**
    * `true` if this column is to contain a button for the user to edit data in the row
    */
-  editButton?: boolean;
+  isEditColumn?: boolean;
+  /**
+   * `true` if this column is to contain a control for the user to select the row
+   */
+  isSelectColumn?: boolean;
   /**
    * `true` if this column should be excluded, e.g. based on a feature toggle
    */
@@ -60,7 +67,7 @@ export type TableColumn<TRow, TRowData = any> = {
   /**
    * The text to use as column header
    */
-  title: string;
+  title?: string;
   /**
    * `number` to right-align cell content
    */
@@ -96,6 +103,10 @@ export type TableRowOptions<TRow, TRowData = any> = {
    */
   label?: (row: TRow, index: number, data: TRowData) => string;
   /**
+   * called when the selection of a row is changed by the user
+   */
+  onSelected?: (row: TRow, selected: boolean) => void;
+  /**
    * Props to add to the `<tr>` of the specified row
    */
   props?: (row: TRow, index: number, data: TRowData) => { [name: string]: any };
@@ -116,6 +127,12 @@ export type TableRowOptions<TRow, TRowData = any> = {
    * Use this hook to avoid re-rendering the entire table when the user edits a single row.
    */
   useDataSummary?: () => TRowData;
+  /**
+   * React Hook to get the selection status of the current row
+   * Must observe Hook principles, such as never calling other hooks conditionally or in loops
+   * Use this hook to avoid re-rendering the entire table when the user selects a single row
+   */
+  useSelected?: (row: TRow) => boolean;
 };
 
 type TableProps<TRow> = {
@@ -161,6 +178,8 @@ function Table<TRow>({
         <TableHeaderRow
           columns={columnList}
           onSortOrderChange={onSortOrderChange}
+          rows={rows}
+          rowOptions={rowOptions}
           sortOrder={sortOrder}
         />
       </thead>
@@ -187,49 +206,80 @@ function Table<TRow>({
 type TableHeaderRowProps<TRow> = {
   columns: TableColumn<TRow>[];
   onSortOrderChange?: (sortOrder: TableSortOrder) => void;
+  rowOptions?: TableRowOptions<TRow>;
+  rows: TRow[];
   sortOrder?: TableSortOrder;
 };
 function TableHeaderRow<TRow>({
   columns,
   onSortOrderChange,
+  rowOptions,
+  rows,
   sortOrder,
 }: PropsWithChildren<TableHeaderRowProps<TRow>>) {
   const fontWeight = 'bold';
+  const allSelectedCheckboxRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (allSelectedCheckboxRef.current) {
+      allSelectedCheckboxRef.current.indeterminate = true;
+    }
+  });
+  const [isAllSelected, setIsAllSelected] = useState(false);
+  const toggleAllSelected: ChangeEventHandler<HTMLInputElement> = (ev) => {
+    const selected = ev.target.checked;
+    setIsAllSelected(selected);
+    if (rowOptions && rowOptions.onSelected) {
+      for (const row of rows) {
+        rowOptions.onSelected(row, selected);
+      }
+    }
+  };
   return (
     <tr>
-      {columns.map(({ name, isSortable, title, type = 'string' }, key) => {
-        const textAlign = type === 'number' ? 'right' : 'left';
-        const columnControl = (() => {
-          if (sortOrder && onSortOrderChange && isSortable && name) {
-            const { columnName, direction } = sortOrder;
-            const isSortedByThisColumn = columnName === name;
-            const newDirection = isSortedByThisColumn
-              ? reverse(direction)
-              : 'asc';
-            const sortOrderChangeHandler = () =>
-              onSortOrderChange({
-                columnName: name,
-                direction: newDirection,
-              });
-            const sortText = isSortedByThisColumn
-              ? `sorted ${direction}`
-              : 'sort';
-            return (
-              <>
-                {title}
-                <button onClick={sortOrderChangeHandler}>{sortText}</button>
-              </>
-            );
-          } else {
-            return <>{title}</>;
-          }
-        })();
-        return (
-          <td style={{ fontWeight, textAlign }} key={key}>
-            {columnControl}
-          </td>
-        );
-      })}
+      {columns.map(
+        ({ name, isSelectColumn, isSortable, title, type = 'string' }, key) => {
+          const textAlign = type === 'number' ? 'right' : 'left';
+          const columnControl = (() => {
+            if (isSelectColumn) {
+              return (
+                <input
+                  ref={allSelectedCheckboxRef}
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={toggleAllSelected}
+                />
+              );
+            } else if (sortOrder && onSortOrderChange && isSortable && name) {
+              const { columnName, direction } = sortOrder;
+              const isSortedByThisColumn = columnName === name;
+              const newDirection = isSortedByThisColumn
+                ? reverse(direction)
+                : 'asc';
+              const sortOrderChangeHandler = () =>
+                onSortOrderChange({
+                  columnName: name,
+                  direction: newDirection,
+                });
+              const sortText = isSortedByThisColumn
+                ? `sorted ${direction}`
+                : 'sort';
+              return (
+                <>
+                  {title || ''}
+                  <button onClick={sortOrderChangeHandler}>{sortText}</button>
+                </>
+              );
+            } else {
+              return <>{title || ''}</>;
+            }
+          })();
+          return (
+            <td style={{ fontWeight, textAlign }} key={key}>
+              {columnControl}
+            </td>
+          );
+        }
+      )}
     </tr>
   );
 }
@@ -248,6 +298,8 @@ function TableRow<TRow>({
 }: PropsWithChildren<TableRowProps<TRow>>) {
   const useData = rowOptions.useData || (() => null);
   const rowData = useData(row, rowIndex);
+  const useSelected = rowOptions.useSelected || (() => false);
+  const isSelected = useSelected(row);
   const [isEditing, setIsEditing] = useState(false);
   const isExcluded =
     rowOptions.isExcluded && rowOptions.isExcluded(row, rowIndex, rowData);
@@ -256,6 +308,9 @@ function TableRow<TRow>({
   };
   const closeHandler = () => {
     setIsEditing(false);
+  };
+  const selectHandler = (selected: boolean) => {
+    rowOptions.onSelected && rowOptions.onSelected(row, selected);
   };
   if (isExcluded) {
     return <tr style={{ display: 'none' }} />;
@@ -288,6 +343,8 @@ function TableRow<TRow>({
           rowData={rowData}
           rowIndex={rowIndex}
           isEditable={isEditable}
+          isSelected={isSelected}
+          onSelected={selectHandler}
           columns={columns}
           rowOptions={rowOptions}
           onEdit={editHandler}
@@ -301,6 +358,8 @@ type TableRowViewProps<TRow, TRowData> = {
   columns: TableColumn<TRow, TRowData>[];
   isEditable: boolean;
   onEdit: () => void;
+  isSelected: boolean;
+  onSelected: (selected: boolean) => void;
   rowOptions: TableRowOptions<TRow, TRowData>;
   row: TRow;
   rowData: TRowData;
@@ -309,21 +368,41 @@ type TableRowViewProps<TRow, TRowData> = {
 function TableRowView<TRow, TRowData>({
   columns,
   isEditable,
+  isSelected,
   onEdit,
+  onSelected,
   rowOptions,
   row,
   rowData,
   rowIndex,
 }: PropsWithChildren<TableRowViewProps<TRow, TRowData>>) {
+  const changeHandler: ChangeEventHandler<HTMLInputElement> = (ev) => {
+    const selected = ev.target.checked;
+    onSelected(selected);
+  };
   return (
     <>
       {columns.map((column, columnIndex) => {
-        const { cell, cellStyle, editButton, type = 'string' } = column;
+        const {
+          cell,
+          cellStyle,
+          isEditColumn,
+          isSelectColumn,
+          type = 'string',
+        } = column;
         const textAlign = type === 'number' ? 'right' : 'left';
         const element = (
           <>
             {(() => {
-              if (isEditable && editButton) {
+              if (isSelectColumn) {
+                return (
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={changeHandler}
+                  />
+                );
+              } else if (isEditable && isEditColumn) {
                 const label = rowOptions.label
                   ? rowOptions.label(row, rowIndex, rowData)
                   : `row ${rowIndex + 1}`;
