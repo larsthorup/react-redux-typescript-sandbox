@@ -14,7 +14,7 @@ const routes: Routes = {
   '/': <Home />,
   '/signin': <LoginForm />,
   '/profile': <Profile />,
-  '/people': <People />
+  '/people': <People />,
 };
 
 const App: React.FC = () => {

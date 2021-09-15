@@ -39,7 +39,8 @@
     "lars": "tsc && react-scripts test --env=jsdom-fourteen --watchAll=false --runTestsByPath src/lib/assoc.test.ts",
     "eject": "react-scripts eject",
     "coveralls": "coveralls < coverage/lcov.info",
-    "travis": "npm run test:ci && npm run coveralls"
+    "travis": "npm run test:ci && npm run coveralls",
+    "generate": "node src/generated/generate.mjs"
   },
   "eslintConfig": {
     "extends": "react-app"
