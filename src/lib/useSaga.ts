@@ -39,10 +39,10 @@ const useSaga = <TState, TArg, TResult>(
         isCompleted: true,
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       setState({
         ...state,
-        error,
+        error: error instanceof Error ? error : new Error(error.toString()),
         isRunning: false,
       });
       if (options?.throwOnError) throw error;
