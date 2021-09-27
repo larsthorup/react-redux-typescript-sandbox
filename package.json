@@ -37,8 +37,6 @@
     "test": "tsc && react-scripts test",
     "test:ci": "tsc && npm run generate && react-scripts test --watchAll=false --coverage --verbose",
     "eject": "react-scripts eject",
-    "coveralls": "coveralls < coverage/lcov.info",
-    "travis": "npm run test:ci && npm run coveralls",
     "generate": "node src/generated/generate.mjs"
   },
   "eslintConfig": {
