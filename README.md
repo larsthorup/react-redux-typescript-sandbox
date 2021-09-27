@@ -4,20 +4,21 @@
 
 ## Docs
 
-
 TypeScript
-* https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html
-* https://gabrieltanner.org/blog/typescript-crash-course
+
+- https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html
+- https://gabrieltanner.org/blog/typescript-crash-course
 
 React
-* https://github.com/typescript-cheatsheets/react-typescript-cheatsheet
+
+- https://github.com/typescript-cheatsheets/react-typescript-cheatsheet
 
 Redux
-* https://redux.js.org/recipes/usage-with-typescript/
-* https://react-redux.js.org/using-react-redux/static-typing
-* https://github.com/piotrwitek/react-redux-typescript-guide
-* https://dev.to/pretaporter/typescript-and-redux-my-tips-5da9
 
+- https://redux.js.org/recipes/usage-with-typescript/
+- https://react-redux.js.org/using-react-redux/static-typing
+- https://github.com/piotrwitek/react-redux-typescript-guide
+- https://dev.to/pretaporter/typescript-and-redux-my-tips-5da9
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
